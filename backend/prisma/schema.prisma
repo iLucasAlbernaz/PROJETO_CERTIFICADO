@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String   @unique
+  passwordHash String
+  role         String   @default("ADMIN")
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+}
+
+model Certificate {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cpf       String
+  registro  String   @unique
+  matricula String   @unique
+  nome      String
+  curso     String
+  inicio    DateTime @db.Timestamptz(6)
+  fim       DateTime @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@index([cpf])
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model cursos {
+  carimbo_data_hora DateTime? @db.Timestamp(6)
+  email             String?   @db.VarChar(255)
+  numero_registro   String?   @db.VarChar(50)
+  nome_completo     String?   @db.VarChar(255)
+  cpf               String?   @db.VarChar(20)
+  rg_identidade     String?   @db.VarChar(50)
+  nome_do_curso     String?   @db.VarChar(255)
+  data_inicio       DateTime? @db.Date
+  data_conclusao    DateTime? @db.Date
+  numero_matricula  String?   @db.VarChar(50)
+
+  @@ignore
+}
+
+model students {
+  cpf       String @id @db.VarChar(11)
+  nome      String
+  curso     String
+  photo_url String
+
+  @@index([nome], map: "idx_students_nome")
+}

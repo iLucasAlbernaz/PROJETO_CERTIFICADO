@@ -1,0 +1,326 @@
+openapi: 3.0.3
+info:
+  title: API - Validador de Certificados
+  version: 1.0.0
+  description: >
+    API REST para consulta pública de certificados e painel administrativo
+    com autenticação JWT.
+servers:
+  - url: http://localhost:4000
+    description: Ambiente local
+tags:
+  - name: Auth
+  - name: Certificates
+  - name: Users
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: admin@certificados.com
+        password:
+          type: string
+          format: password
+          example: Admin@123
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          example: ADMIN
+        createdAt:
+          type: string
+          format: date-time
+    CreateUserRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+        role:
+          type: string
+          default: ADMIN
+    UpdateUserRequest:
+      type: object
+      properties:
+        password:
+          type: string
+        role:
+          type: string
+          enum: [ADMIN]
+    Certificate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        cpf:
+          type: string
+        registro:
+          type: string
+        matricula:
+          type: string
+        nome:
+          type: string
+        curso:
+          type: string
+        inicio:
+          type: string
+          format: date-time
+        fim:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    CertificatePayload:
+      type: object
+      required:
+        [cpf, registro, matricula, nome, curso, inicio, fim]
+      properties:
+        cpf:
+          type: string
+          example: '14522446349'
+        registro:
+          type: string
+        matricula:
+          type: string
+        nome:
+          type: string
+        curso:
+          type: string
+        inicio:
+          type: string
+          format: date-time
+        fim:
+          type: string
+          format: date-time
+paths:
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Autenticar administrador
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Autenticado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Credenciais inválidas
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Obter dados do usuário autenticado
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Usuário atual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Não autorizado
+  /api/certificates/lookup/{cpf}:
+    get:
+      tags: [Certificates]
+      summary: Consultar certificados por CPF (rota pública)
+      parameters:
+        - in: path
+          name: cpf
+          required: true
+          schema:
+            type: string
+          example: '14522446349'
+      responses:
+        '200':
+          description: Lista de certificados encontrados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Certificate'
+        '404':
+          description: Nenhum certificado encontrado
+  /api/certificates:
+    get:
+      tags: [Certificates]
+      summary: Listar certificados (admin)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Lista completa
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Certificate'
+        '401':
+          description: Não autorizado
+    post:
+      tags: [Certificates]
+      summary: Criar certificado
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificatePayload'
+      responses:
+        '201':
+          description: Certificado criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificate'
+        '400':
+          description: Dados inválidos
+        '401':
+          description: Não autorizado
+  /api/certificates/{id}:
+    put:
+      tags: [Certificates]
+      summary: Atualizar certificado
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Qualquer campo do certificado pode ser enviado
+      responses:
+        '200':
+          description: Certificado atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificate'
+        '404':
+          description: Certificado não encontrado
+    delete:
+      tags: [Certificates]
+      summary: Remover certificado
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Removido
+        '404':
+          description: Certificado não encontrado
+  /api/users:
+    get:
+      tags: [Users]
+      summary: Listar usuários admin
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Usuários cadastrados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      tags: [Users]
+      summary: Criar usuário admin
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: Usuário criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /api/users/{id}:
+    patch:
+      tags: [Users]
+      summary: Atualizar usuário
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Usuário atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    delete:
+      tags: [Users]
+      summary: Remover usuário
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Removido

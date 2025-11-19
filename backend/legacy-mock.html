@@ -1,0 +1,4876 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Validador de Certificados</title>
+	<!-- Bootstrap 5 CSS -->
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+	<style type="text/css">body {
+      background-color: #f8f9fa;
+      margin: 20px;
+    }
+
+    .card-consulta {
+      border-radius: 1rem;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+    }
+
+    .btn-consultar {
+      border-radius: 20px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    }
+
+    .form-floating > label {
+      color: #6c757d;
+    }
+
+    .table thead th {
+      background-color: #dc3545;
+      color: #fff;
+    }
+
+    .modal-content {
+      border-radius: 1rem;
+    }
+	</style>
+</head>
+<body>
+<div class="container">
+<h1 class="my-4 text-center">Validador de Certificados</h1>
+
+<div class="row justify-content-center">
+<div class="col-md-6"><!-- Card para a consulta -->
+<div class="card card-consulta p-4">
+<div class="card-body">
+<h5 class="card-title mb-3">Consultar Certificado</h5>
+
+<div class="mb-3 form-floating"><input class="form-control" id="cpf" placeholder="Digite o CPF" type="text" /> <label for="cpf">CPF</label></div>
+<button class="btn btn-danger btn-consultar w-100" onclick="consultarCPF()">Consultar</button></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal para exibir resultado(s) da consulta -->
+
+<div aria-hidden="true" aria-labelledby="resultadoModalLabel" class="modal fade" id="resultadoModal" tabindex="-1">
+<div class="modal-dialog modal-lg modal-dialog-centered">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title" id="resultadoModalLabel">Resultado da Consulta</h5>
+<button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
+
+<div class="modal-body">
+<div class="table-responsive">
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>N&ordm; Registro</th>
+			<th>Matr&iacute;cula</th>
+			<th>Nome</th>
+			<th>Curso</th>
+			<th>In&iacute;cio</th>
+			<th>T&eacute;rmino</th>
+		</tr>
+	</thead>
+	<tbody id="table-body"><!-- As linhas de resultado serão inseridas via JavaScript -->
+	</tbody>
+</table>
+</div>
+</div>
+
+<div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Fechar</button></div>
+</div>
+</div>
+</div>
+<!-- Bootstrap 5 JS (necessário para o modal funcionar) --><script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+></script><script>
+  // Mock de dados (arquivo 'mock' que você pediu para atualizar)
+  const mockData = [
+
+    // ---- Novos registros (com base na sua planilha) ----
+
+    // 24/02/2025 16:49:22 - ROMES
+    {
+      cpf: "01010892100",
+      registro: "23232",
+      matricula: "23232",
+      nome: "ROMES",
+      curso: "ÉTICA NO TRABALHO",
+      inicio: "02/01/2025",
+      fim: "10/02/2025",
+    },
+
+    // 28/02/2025 20:30:29 - PEDRO JORGE...
+    {
+      cpf: "14522446349",
+      registro: "20252802-1",
+      matricula: "20252802-1",
+      nome: "PEDRO JORGE DE ARAUJO LIMA",
+      curso: "ÉTICA NO TRABALHO",
+      inicio: "02/01/2025",
+      fim: "10/02/2025",
+    },
+
+    // 13/03/2025 16:41:56 - Marcelo
+    {
+      cpf: "11463991703",
+      registro: "2025624413",
+      matricula: "2025624413",
+      nome: "Marcelo Araujo da Silva",
+      curso: "CURSO SUPERIOR DE COMPLEMENTAÇÃO DE ESTUDOS EM GESTÃO EM SEGURANÇA PÚBLICA E PRIVADA",
+      inicio: "08/09/2024",
+      fim: "09/12/2024",
+    },
+
+    // 13/03/2025 16:43:08 - Silvino
+    {
+      cpf: "12754010742",
+      registro: "20253536131",
+      matricula: "20253536131",
+      nome: "Silvino Nascimento Rodrigues",
+      curso: "CURSO SUPERIOR DE COMPLEMENTAÇÃO DE ESTUDOS EM GESTÃO EM SEGURANÇA PÚBLICA E PRIVADA",
+      inicio: "08/09/2024",
+      fim: "09/12/2024",
+    },
+
+    // 14/03/2025 15:31:31 - Wellison
+    {
+      cpf: "70006423191",
+      registro: "20250012015",
+      matricula: "20250012015",
+      nome: "Wellison Silva Soares",
+      curso: "Motorista - O trânsito e a mobilidade urbana",
+      inicio: "02/01/2025",
+      fim: "20/02/2025",
+    },
+
+    // 14/03/2025 16:03:04 - Vancisa
+    {
+      cpf: "66555442115",
+      registro: "20250012016",
+      matricula: "20250012016",
+      nome: "Vancisa Lopes Lima",
+      curso: "Atendimento Educacional Especial para deficiente Intelectual",
+      inicio: "02/01/2025",
+      fim: "20/02/2025",
+    },
+
+    // 14/03/2025 16:05:00 - Rodrigo 
+    {
+      cpf: "82844690149",
+      registro: "20250012017",
+      matricula: "20250012017",
+      nome: "Rodrigo Rezende dos Anjos",
+      curso: "Práticas de Coordenação Pedagógica",
+      inicio: "02/01/2025",
+      fim: "20/02/2025",
+    },
+
+    // 14/03/2025 16:09:21 - Nirleide
+    {
+      cpf: "96699760653",
+      registro: "20250012019",
+      matricula: "20250012019",
+      nome: "Nirleide Montes de Brito Silva",
+      curso: "Práticas de Liderança e Gestão de Equipes",
+      inicio: "02/01/2025",
+      fim: "20/02/2025",
+    },
+
+    // 14/03/2025 16:11:42 - Jeovanilde
+    {
+      cpf: "38123134134",
+      registro: "202500012020",
+      matricula: "202500012020",
+      nome: "Jeovanilde Ferreira da Silva",
+      curso: "A Música... Melodia, Harmonia e ritmo no Desenvolver da Atividade Escolar",
+      inicio: "02/01/2025",
+      fim: "20/02/2025",
+    },
+
+    // 14/03/2025 16:20:06 - Lionita
+    {
+      cpf: "00611254662",
+      registro: "20250012022",
+      matricula: "20250012022",
+      nome: "Lionita Gonçalves de Sousa",
+      curso: "Doenças Profissionais e sua Prevenções",
+      inicio: "02/01/2025",
+      fim: "20/02/2025",
+    },
+
+    // 14/03/2025 16:22:35 - Marcia
+    {
+      cpf: "69811482187",
+      registro: "20250012023",
+      matricula: "20250012023",
+      nome: "Marcia Rodrigues Batista",
+      curso: "Práticas Pedagógicas do Supervisor Escolar",
+      inicio: "02/01/2025",
+      fim: "20/02/2025",
+    },
+
+    // 14/03/2025 16:24:22 - Benival
+    {
+      cpf: "81897839120",
+      registro: "20250012024",
+      matricula: "20250012024",
+      nome: "Benival Ferreira de Jesus",
+      curso: "Gerenciamento de Riscos",
+      inicio: "02/01/2025",
+      fim: "20/02/2025",
+    },
+
+    // 14/03/2025 16:27:52 - Moises
+    {
+      cpf: "77097092149",
+      registro: "20250012025",
+      matricula: "20250012025",
+      nome: "Moises Alves de Azevedo Spindola",
+      curso: "ÉTICA NO TRABALHO",
+      inicio: "02/01/2025",
+      fim: "20/02/2025",
+    },
+
+    // 14/03/2025 16:29:50 - Evana
+    {
+      cpf: "01939958164",
+      registro: "20250012027",
+      matricula: "20250012027",
+      nome: "Evana Natalia Horta de Jesus Oliveira",
+      curso: "Educação Inclusiva e Especial",
+      inicio: "02/01/2025",
+      fim: "20/02/2025",
+    },
+
+    // 14/03/2025 16:31:29 - ANDERSON
+    {
+      cpf: "48409570106",
+      registro: "20250012027",
+      matricula: "20250012027",
+      nome: "ANDERSON DA SILVA ALVES",
+      curso: "MEDIAÇÃO DE CONFLITOS",
+      inicio: "02/01/2025",
+      fim: "20/02/2025",
+    },
+
+    // 14/03/2025 16:33:10 - Cristiano
+    {
+      cpf: "02568449179",
+      registro: "20250012028",
+      matricula: "20250012028",
+      nome: "Cristiano Santos de Carvalho",
+      curso: "Inteligência Emocional",
+      inicio: "02/01/2025",
+      fim: "20/02/2025",
+    },
+
+    // 14/03/2025 16:35:07 - Lucinete
+    {
+      cpf: "48807656191",
+      registro: "20250012029",
+      matricula: "20250012029",
+      nome: "Lucinete de Araújo Souza",
+      curso: "Estresse: Prevenção e gerenciamento",
+      inicio: "02/01/2025",
+      fim: "20/02/2025",
+    },
+
+    // 14/03/2025 16:37:57 - Adriana
+    {
+      cpf: "61041246153",
+      registro: "20250012030",
+      matricula: "20250012030",
+      nome: "Adriana Gonçalves Ribeiro",
+      curso: "Transtorno do Espectro Autista (TEA) - Intervenções Precoces em Deficiências Comportamentais",
+      inicio: "03/01/2025",
+      fim: "24/02/2025",
+    },
+
+    // 17/03/2025 14:47:32 - Rachid
+    {
+      cpf: "01277335150",
+      registro: "1038",
+      matricula: "1038",
+      nome: "Rachid Antunes Gadelha",
+      curso: "Dinâmica das Relações Humanas e Liderançca ",
+      inicio: "02/01/2025",
+      fim: "04/03/2025",
+    },
+
+    // 21/03/2025 14:49:52 - Melrilin
+    {
+      cpf: "02032281112",
+      registro: "20250012027",
+      matricula: "20250012027",
+      nome: "Melrilin Leine de Almeida Sousa",
+      curso: "Discalculia - Inabilidades Matemáticas",
+      inicio: "02/01/2025",
+      fim: "03/03/2025",
+    },
+
+    // 21/03/2025 14:51:39 - Gilmar
+    {
+      cpf: "61065782191",
+      registro: "20250012028",
+      matricula: "20250012028",
+      nome: "Gilmar Gonçalves de Faria",
+      curso: "Libras",
+      inicio: "02/01/2025",
+      fim: "03/03/2025",
+    },
+
+    // 21/03/2025 14:53:36 - Maria Abadia
+    {
+      cpf: "82532109149",
+      registro: "20250012029",
+      matricula: "20250012029",
+      nome: "Maria Abadia Pires de Souza Lima",
+      curso: "Inteligência Emocional",
+      inicio: "02/01/2025",
+      fim: "03/03/2025",
+    },
+
+    // 21/03/2025 14:55:26 - Manuela
+    {
+      cpf: "66590213291",
+      registro: "202500012030",
+      matricula: "202500012030",
+      nome: "Manuela Melo da Silva Bazilio",
+      curso: "Jogos e Ludicidade na Educação",
+      inicio: "02/01/2025",
+      fim: "03/03/2025",
+    },
+
+    // 21/03/2025 15:06:57 - Iraíde
+    {
+      cpf: "25306286372",
+      registro: "20250012030",
+      matricula: "20250012030",
+      nome: "Iraíde de Jesus da Silva",
+      curso: "ÉTICA NO TRABALHO",
+      inicio: "02/01/2025",
+      fim: "03/03/2025",
+    },
+
+    // 21/03/2025 15:08:55 - Maria Fernanda
+    {
+      cpf: "02022938151",
+      registro: "20250012031",
+      matricula: "20250012031",
+      nome: "Maria Fernanda de Miranda Lima",
+      curso: "Planejamento e Gestão Estratégica e Saúde",
+      inicio: "02/01/2025",
+      fim: "03/03/2025",
+    },
+    
+    //21/03/2025 17:16:06 - Roseneide Alemar Morais Bueno
+    {
+      cpf: "81207603104",
+      registro: "20250012033",
+      matricula: "20250012033",
+      nome: "Roseneide Alemar Morais Bueno",
+      curso: "Formação de Professores para a Diversidade",
+      inicio: "02/01/2025",
+      fim: "03/03/2025",
+    },
+    
+    {
+    cpf: "92910483134",
+    registro: "20250012035",
+    matricula: "20250012035",
+    nome: "LIDIANE MATIAS SILVA",
+    curso: "PRÁTICAS DE LIDERANÇA E GESTÃO DE EQUIPES",
+    inicio: "02/01/2025",
+    fim: "03/03/2025",
+  },
+  
+  {
+    cpf: "88536084120",
+    registro: "20250012036",
+    matricula: "20250012036",
+    nome: "SÉRGIO DE OLIVEIRA LEAL",
+    curso: "FORMAÇÃO DE PROFESSORES PARA A DIVERSIDADE",
+    inicio: "02/01/2025",
+    fim: "03/03/2025",
+  },
+  
+  {
+    cpf: "69627720178",
+    registro: "20250012037",
+    matricula: "20250012037",
+    nome: "DANIEL SENA DE MELO",
+    curso: "ORATÓRIA",
+    inicio: "02/01/2025",
+    fim: "03/03/2025",
+  },
+  
+  {
+    cpf: "87484188115",
+    registro: "20250012038",
+    matricula: "20250012038",
+    nome: "ROSANGELA DA SILVA LEOCADIO",
+    curso: "MÉTODOS E TÉCNICAS DE TRABALHO COM FAMÍLIAS",
+    inicio: "02/01/2025",
+    fim: "03/03/2025",
+  },
+  
+  {
+    cpf: "35894474191",
+    registro: "20250012039",
+    matricula: "20250012039",
+    nome: "ELANE MARIA COSTA DO REGO",
+    curso: "ORATÓRIA",
+    inicio: "02/01/2025",
+    fim: "03/03/2025",
+  },
+  
+  {
+    cpf: "78282411191",
+    registro: "20250012040",
+    matricula: "20250012040",
+    nome: "ADRIANA ALVES MARANHAO MARQUES",
+    curso: "GESTÃO E LEGISLAÇÃO EDUCACIONAL BRASILEIRA",
+    inicio: "02/01/2025",
+    fim: "03/03/2025",
+  },
+  
+  {
+    cpf: "39299090149",
+    registro: "20250012041",
+    matricula: "20250012041",
+    nome: "ROSIMEIRE GARCIA DE CARVALHO",
+    curso: "ASSISTENTE DE EDUCAÇÃO",
+    inicio: "02/01/2025",
+    fim: "03/03/2025",
+  },
+  
+  {
+    cpf: "35200626153",
+    registro: "20250012042",
+    matricula: "20250012042",
+    nome: "LUIZ ALBERTO SOARES",
+    curso: "SEGURANÇA PATRIMONIAL OPERAÇÕES DE CENTRAIS DE MONITORAMENTO",
+    inicio: "02/01/2025",
+    fim: "03/03/2025",
+  },
+  
+  {
+    cpf: "41115023187",
+    registro: "20250012043",
+    matricula: "20250012043",
+    nome: "SHIRLEY GARCIAS DOS SANTOS PEDROSA",
+    curso: "ALFABETIZAÇÃO E LETRAMENTO",
+    inicio: "02/01/2025",
+    fim: "03/03/2025",
+  },
+  
+  {
+    cpf: "27618994153",
+    registro: "20250012044",
+    matricula: "20250012044",
+    nome: "NEIDE BARBOSA DE SOUZA",
+    curso: "A FUNÇÃO SOCIAL DA LEITURA E DA ESCRITA",
+    inicio: "02/01/2025",
+    fim: "03/03/2025",
+  },
+  
+  {
+    cpf: "58488901100",
+    registro: "20250012045",
+    matricula: "20250012045",
+    nome: "ANDRÉIA ALVES TEIXEIRA",
+    curso: "COMPORTAMENTO HUMANO E DESENVOLVIMENTO MOTOR",
+    inicio: "02/01/2025",
+    fim: "03/03/2025"
+  },
+  {
+    cpf: "47645105100",
+    registro: "20250012046",
+    matricula: "20250012046",
+    nome: "HELCIO JORGE DA FONSECA",
+    curso: "PROCEDIMENTOS DE CURATIVOS",
+    inicio: "02/01/2025",
+    fim: "03/03/2025"
+  },
+  {
+    cpf: "99173557153",
+    registro: "20250012047",
+    matricula: "20250012047",
+    nome: "FRANQUISINALDO DE SOUSA ROCHA",
+    curso: "SEGURANÇA PATRIMONIAL OPERAÇÕES DE CENTRAIS DE MONITORAMENTO",
+    inicio: "02/01/2025",
+    fim: "03/03/2025"
+  },
+  {
+    cpf: "91057418153",
+    registro: "20250012048",
+    matricula: "20250012048",
+    nome: "PEDRO SIRQUEIRA DAMACENA",
+    curso: "ADMINISTRAÇÃO DO TEMPO",
+    inicio: "02/01/2025",
+    fim: "03/03/2025"
+  },
+  {
+    cpf: "48041920187",
+    registro: "20250012049",
+    matricula: "20250012049",
+    nome: "SEBASTIÃO DA SILVA MACHADO",
+    curso: "SEGURANÇA PATRIMONIAL OPERAÇÕES DE CENTRAIS DE MONITORAMENTOS",
+    inicio: "02/01/2025",
+    fim: "03/03/2025"
+  },
+  {
+    cpf: "05421660117",
+    registro: "20250012050",
+    matricula: "20250012050",
+    nome: "MIRIAN DO BOMFIM ALECRIM MESQUITA",
+    curso: "SAÚDE DA MULHER SAÚDE DO ADULTO E DO IDOSOS",
+    inicio: "02/01/2025",
+    fim: "03/03/2025"
+  },
+  {
+    cpf: "31702716104",
+    registro: "20250012051",
+    matricula: "20250012051",
+    nome: "PAULO JOSÉ DE CARVALHO",
+    curso: "SEGURANÇA PATRIMONIAL - OPERAÇÕES DE CENTRAIS DE MONITORAMENTO",
+    inicio: "02/01/2025",
+    fim: "03/03/2025"
+  },
+  {
+    cpf: "44459564149",
+    registro: "20250012052",
+    matricula: "20250012052",
+    nome: "NILVA TAVARES DE MELO",
+    curso: "SECRETÁRIO ESCOLAR - GERENCIAMENTO DO TEMPO",
+    inicio: "02/01/2025",
+    fim: "03/03/2025"
+  },
+  {
+    cpf: "69160384115",
+    registro: "20250012053",
+    matricula: "20250012053",
+    nome: "ANTONIO DAGOBERTO MACHADO MOTA",
+    curso: "INGLÊS BÁSICO",
+    inicio: "02/01/2025",
+    fim: "03/03/2025"
+  },
+  {
+    cpf: "96978643149",
+    registro: "20250012054",
+    matricula: "20250012054",
+    nome: "AMANDA SOUZA DE OLIVEIRA",
+    curso: "INTERVENÇÃO E AVALIAÇÃO PSICOPEDAGÓGICA",
+    inicio: "02/01/2025",
+    fim: "03/03/2025"
+  },
+  {
+    cpf: "37353853115",
+    registro: "20250012055",
+    matricula: "20250012055",
+    nome: "GILDENIA FLORES DE OLIVEIRA",
+    curso: "PROJETO DE VIDA",
+    inicio: "02/01/2025",
+    fim: "03/03/2025"
+  },
+  
+  // 26/03/2025 18:55:02 - Lindalva
+{
+  cpf: "53667867115",
+  registro: "20250012056",
+  matricula: "20250012056",
+  nome: "Lindalva Monteiro Alves Rodrigues",
+  curso: "ORGANIZAÇÃO",
+  inicio: "02/01/2025",
+  fim: "03/03/2025",
+},
+
+// 26/03/2025 18:57:16 - Ilma
+{
+  cpf: "86312170187",
+  registro: "20250012057",
+  matricula: "20250012057",
+  nome: "Ilma Gomes dos Santos Sousa",
+  curso: "ATENDIMENTO EDUCACIONAL ESPECIALIZADO - AEE",
+  inicio: "04/11/2024",
+  fim: "03/12/2024",
+},
+
+// 26/03/2025 19:08:30 - Lucyneide
+{
+  cpf: "84208147172",
+  registro: "20250012058",
+  matricula: "20250012058",
+  nome: "Lucyneide Ribeiro Cruz",
+  curso: "EDUCAÇÃO INFANTIL - UM NOVO OLHAR",
+  inicio: "03/02/2025",
+  fim: "03/03/2025",
+},
+
+// 26/03/2025 19:11:08 - Hélio
+{
+  cpf: "01935141171",
+  registro: "20250012059",
+  matricula: "20250012059",
+  nome: "Hélio Elias Rodrigues de Souza",
+  curso: "DEFASAGEM DE APRENDIZAGEM",
+  inicio: "02/01/2025",
+  fim: "03/03/2025",
+},
+
+// 26/03/2025 19:12:35 - Alan
+{
+  cpf: "00764605178",
+  registro: "20250012060",
+  matricula: "20250012060",
+  nome: "Alan da Penha Soares Calaça",
+  curso: "SOPAS, CALDOS E CREME E A ALIMENTAÇÃO ESCOLAR",
+  inicio: "02/01/2025",
+  fim: "03/03/2025",
+},
+
+// 26/03/2025 19:14:07 - Michele
+{
+  cpf: "00390959162",
+  registro: "20250012061",
+  matricula: "20250012061",
+  nome: "Michele Patricia da Silva Custodio",
+  curso: "PRÁTICAS PEDAGÓGICAS DE INSPEÇÃO ESCOLAR",
+  inicio: "02/01/2025",
+  fim: "03/03/2025",
+},
+
+// 26/03/2025 19:17:35 - Adriano
+{
+  cpf: "87273705187",
+  registro: "20250012062",
+  matricula: "20250012062",
+  nome: "Adriano Silva Couto",
+  curso: "GESTÃO DE CUSTOS E FINANÇAS",
+  inicio: "02/01/2025",
+  fim: "03/03/2025",
+},
+
+// 26/03/2025 19:20:36 - Edna
+{
+  cpf: "77077164187",
+  registro: "20250012063",
+  matricula: "20250012063",
+  nome: "Edna Rodrigues de Oliveira",
+  curso: "PSICOMOTRICIDADE E A RELAÇÃO COM O MEIO AMBIENTE",
+  inicio: "02/01/2025",
+  fim: "03/03/2025",
+},
+
+// 26/03/2025 19:23:41 - Miriam Viana de Sousa
+{
+  cpf: "99819201187",
+  registro: "20250012064",
+  matricula: "20250012064",
+  nome: "Miriam Viana de Sousa",
+  curso: "ORGANIZAÇÃO",
+  inicio: "02/01/2025",
+  fim: "03/03/2025",
+},
+
+// 26/03/2025 19:31:26 - Glaucilene Pereira Almeida
+{
+  cpf: "81859325149",
+  registro: "20250012065",
+  matricula: "20250012065",
+  nome: "Glaucilene Pereira Almeida",
+  curso: "A MÚSICA... MELODIA, HARMONIA E RITMO NO DESENVOLVER DA APRENDIZAGEM ESCOLAR",
+  inicio: "02/01/2025",
+  fim: "03/03/2025",
+},
+
+// 26/03/2025 19:36:48 - Ana Cristina de Almeida Silvano
+{
+  cpf: "41635302153",
+  registro: "20250012066",
+  matricula: "20250012066",
+  nome: "Ana Cristina de Almeida Silvano",
+  curso: "EDUCAÇÃO INCLUSIVA E ESPECIAL",
+  inicio: "02/01/2025",
+  fim: "03/03/2025",
+},
+
+// 26/03/2025 19:38:34 - Veronica Maria da Conceição Costa
+{
+  cpf: "01136754105",
+  registro: "20250012067",
+  matricula: "20250012067",
+  nome: "Veronica Maria da Conceição Costa",
+  curso: "PSICOLOGIA DA APRENDIZAGEM E DESENVOLVIMENTO",
+  inicio: "02/01/2025",
+  fim: "03/03/2025",
+},
+
+// 26/03/2025 19:43:53 - Eduardo Nascimento Marques
+{
+  cpf: "89187822172",
+  registro: "20250012068",
+  matricula: "20250012068",
+  nome: "Eduardo Nascimento Marques",
+  curso: "ATENDIMENTO EDUCACIONAL ESPECIAL PARA PESSOAS COM DEFICIÊNCIA FÍSICA",
+  inicio: "02/01/2025",
+  fim: "03/03/2025",
+},
+
+// 26/03/2025 19:48:55 - Maristela Dantas de Araujo
+{
+  cpf: "94288763134",
+  registro: "20250012069",
+  matricula: "20250012069",
+  nome: "Maristela Dantas de Araujo",
+  curso: "EXCELÊNCIA NO ATENDIMENTO AO PÚBLICO",
+  inicio: "02/01/2025",
+  fim: "03/03/2025",
+},
+
+// 26/03/2025 19:51:14 - Keila Aparecida de Souza Rodrigues
+{
+  cpf: "04038658678",
+  registro: "20250012070",
+  matricula: "20250012070",
+  nome: "Keila Aparecida de Souza Rodrigues",
+  curso: "LEDOR E TRANSCRITOR",
+  inicio: "02/01/2025",
+  fim: "03/03/2025",
+},
+
+// 26/03/2025 19:53:52 - Daniely Lins Medeiros
+{
+  cpf: "03622969105",
+  registro: "20250012071",
+  matricula: "20250012071",
+  nome: "Daniely Lins Medeiros",
+  curso: "TEA - TRANSTORNO DO ESPECTRO DO AUTISMO INTERVENÇÕES PRECOCES EM DEFICIÊNCIAS COMPORTAMENTAIS",
+  inicio: "02/01/2025",
+  fim: "03/03/2025",
+},
+
+// 26/03/2025 19:55:11 - Terezinha de Jesus Aguiar Liberato
+{
+  cpf: "29757177172",
+  registro: "20250012072",
+  matricula: "20250012072",
+  nome: "Terezinha de Jesus Aguiar Liberato",
+  curso: "ALIMENTAÇÃO SAUDÁVEL E SUSTENTÁVEL-PLANEJAMENTO NO PREPARO DOS ALIMENTOS",
+  inicio: "02/01/2025",
+  fim: "03/03/2025",
+},
+
+// 26/03/2025 19:57:29 - José Lindeilson Machado
+{
+  cpf: "70115877134",
+  registro: "20250012073",
+  matricula: "20250012073",
+  nome: "José Lindeilson Machado",
+  curso: "SEGURANÇA PATRIMONIAL - OPERAÇÕES DE CENTRAIS DE MONITORAMENTO",
+  inicio: "02/01/2025",
+  fim: "03/03/2025",
+},
+
+// 27/03/2025 15:02:42 - Lucirene Cerqueira Lima
+{
+  cpf: "69678910144",
+  registro: "20250012074",
+  matricula: "20250012074",
+  nome: "Lucirene Cerqueira Lima",
+  curso: "PRÁTICAS DE COORDENAÇÃO PEDAGÓGICA",
+  inicio: "02/01/2025",
+  fim: "03/03/2025"
+},
+
+// 27/03/2025 15:04:18 - João Antonio Rocha Chaves
+{
+  cpf: "58531289149",
+  registro: "20250012075",
+  matricula: "20250012075",
+  nome: "João Antonio Rocha Chaves",
+  curso: "PRÁTICAS DE COORDENAÇÃO PEDAGÓGICA",
+  inicio: "02/01/2025",
+  fim: "03/03/2025"
+},
+
+// 27/03/2025 15:05:48 - Fabiana da Silva Cucaroli
+{
+  cpf: "69389136172",
+  registro: "20250012076",
+  matricula: "20250012076",
+  nome: "Fabiana da Silva Cucaroli",
+  curso: "AVALIAÇÃO E O PROCESSO DE PLANEJAMENTO",
+  inicio: "02/01/2025",
+  fim: "03/03/2025"
+},
+
+// 27/03/2025 15:07:10 - Mauro Marcos Pinheiro Castelo Branco
+{
+  cpf: "60176954104",
+  registro: "20250012077",
+  matricula: "20250012077",
+  nome: "Mauro Marcos Pinheiro Castelo Branco",
+  curso: "EXCELÊNCIA NO ATENDIMENTO AO PÚBLICO",
+  inicio: "02/01/2025",
+  fim: "03/03/2025"
+},
+
+// 27/03/2025 15:08:17 - Adib Gomes Silva
+{
+  cpf: "06453079127",
+  registro: "20250012078",
+  matricula: "20250012078",
+  nome: "Adib Gomes Silva",
+  curso: "CUIDADOR DE IDOSOS",
+  inicio: "02/01/2025",
+  fim: "03/03/2025"
+},
+
+// 31/03/2025 14:42:46 - Karina de Jezus Soares
+{
+  cpf: "00045808180",
+  registro: "20250012079",
+  matricula: "20250012079",
+  nome: "Karina de Jezus Soares",
+  curso: "TRANSTORNO DO ESPECTRO DO AUTISMO - TEA",
+  inicio: "02/01/2025",
+  fim: "03/03/2025"
+},
+
+// 31/03/2025 14:44:11 - Vanessa Araújo de Queiroz
+{
+  cpf: "01376903555",
+  registro: "20250012080",
+  matricula: "20250012080",
+  nome: "Vanessa Araújo de Queiroz",
+  curso: "PSICOLOGIA DA APRENDIZAGEM E DESENVOLVIMENTO",
+  inicio: "02/01/2025",
+  fim: "03/03/2025"
+},
+
+// 31/03/2025 14:45:30 - Jeovanete da Silva Barbosa
+{
+  cpf: "58507515134",
+  registro: "20250012081",
+  matricula: "20250012081",
+  nome: "Jeovanete da Silva Barbosa",
+  curso: "PROJETO DE VIDA",
+  inicio: "02/01/2025",
+  fim: "20/02/2025"
+},
+
+// 31/03/2025 14:46:50 - Rudson Rezende da Silva
+{
+  cpf: "00461914107",
+  registro: "20250012082",
+  matricula: "20250012082",
+  nome: "Rudson Rezende da Silva",
+  curso: "ORATÓRIA",
+  inicio: "02/01/2025",
+  fim: "20/02/2025"
+},
+
+// 31/03/2025 14:49:14 - Francisca Ferreira de Oliveira Abreu
+{
+  cpf: "32905562287",
+  registro: "20250012083",
+  matricula: "20250012083",
+  nome: "Francisca Ferreira de Oliveira Abreu",
+  curso: "ÉTICA NO TRABALHO",
+  inicio: "02/01/2025",
+  fim: "10/02/2025"
+},
+
+// 25/04/2025 16:03:52 - Luiza Regis de Almeida
+{
+  cpf: "04080951132",
+  registro: "20240026-1",
+  matricula: "20240026-1",
+  nome: "Luiza Regis de Almeida",
+  curso: "PÓS-GRADUAÇÃO LATO SENSU EM DIREITO PENITENCIÁRIO E EXECUÇÃO PENAL",
+  inicio: "10/07/2023",
+  fim: "24/05/2024"
+},
+
+// 25/04/2025 16:08:14 - Luiza Regis de Almeida
+{
+  cpf: "04080951132",
+  registro: "20240025-3",
+  matricula: "20240025-3",
+  nome: "Luiza Regis de Almeida",
+  curso: "PÓS-GRADUAÇÃO LATO SENSU EM GESTÃO PRISIONAL",
+  inicio: "05/06/2023",
+  fim: "15/04/2024"
+},
+
+// - Elane Maria Costa do Rego
+{
+  cpf: "35894474191",
+  registro: "20240027-1",
+  matricula: "20240027-1",
+  nome: "Elane Maria Costa do Rego",
+  curso: "PÓS-GRADUAÇÃO LATO SENSU EM GESTÃO ESCOLAR (ADMINISTRAÇÃO, COORDENAÇÃO, ORIENTAÇÃO, SUPERVISÃO E INSPEÇÃO ESCOLAR)",
+  inicio: "08/01/2024",
+  fim: "22/07/2024"
+},
+
+// - Fabio Fernando Ferreira Silva
+{
+  cpf: "07856506601",
+  registro: "20240029-1",
+  matricula: "20240029-1",
+  nome: "Fabio Fernando Ferreira Silva",
+  curso: "PÓS-GRADUAÇÃO LATO SENSU EM CONTROLADORIA, AUDITORIA E FINANÇAS",
+  inicio: "22/01/2024",
+  fim: "28/06/2024"
+},
+
+// - Fabio Fernando Ferreira Silva
+{
+  cpf: "07856506601",
+  registro: "20240028-1",
+  matricula: "20240028-1",
+  nome: "Fabio Fernando Ferreira Silva",
+  curso: "PÓS-GRADUAÇÃO LATO SENSU EM DIREITO ADMINISTRATIVO",
+  inicio: "08/07/2024",
+  fim: "20/12/2024"
+},
+
+// - Gabriela Azevedo Lima
+{
+  cpf: "01915757126",
+  registro: "20240030-1",
+  matricula: "20240030-1",
+  nome: "Gabriela Azevedo Lima",
+  curso: "PÓS-GRADUAÇÃO LATO SENSU EM DIREITO ADMINISTRATIVO",
+  inicio: "08/07/2024",
+  fim: "21/03/2024"
+},
+// 10/06/2019 - ANA PAULA OLIVEIRA FERNANDES
+{
+  cpf: "05424584110",
+  registro: "20250012090",
+  matricula: "20250012090",
+  nome: "ANA PAULA OLIVEIRA FERNANDES",
+  curso: "ALFABETIZAÇÃO E LETRAMENTO: O CAMINHO PARA O FUTURO",
+  inicio: "10/06/2019",
+  fim: "10/07/2019"
+},
+
+// 10/06/2019 - ANA PAULA OLIVEIRA FERNANDES
+{
+  cpf: "05424584110",
+  registro: "20250012091",
+  matricula: "20250012091",
+  nome: "ANA PAULA OLIVEIRA FERNANDES",
+  curso: "ALFABETIZAÇÃO NA EDUCAÇÃO INFANTIL E NOS ANOS INICIAIS",
+  inicio: "10/06/2019",
+  fim: "10/07/2019"
+},
+
+// 08/07/2024 - Elaine Cândida de Souza
+{
+  cpf: "44974000187",
+  registro: "20250012092",
+  matricula: "20250012092",
+  nome: "Elaine Cândida de Souza",
+  curso: "MBA EM ADMINISTRAÇÃO DE EMPRESAS",
+  inicio: "08/07/2024",
+  fim: "09/12/2024"
+},
+
+// 05/06/2023 - Breno Patrick Silva Morais
+{
+  cpf: "03520936178",
+  registro: "20240030-1",
+  matricula: "20240030-1",
+  nome: "Breno Patrick Silva Morais",
+  curso: "PÓS-GRADUAÇÃO LATO SENSU EM GESTÃO PRISIONAL",
+  inicio: "05/06/2023",
+  fim: "15/01/2024"
+},
+
+{
+  cpf: "38145332168",
+  registro: "20250012094",
+  matricula: "20250012094",
+  nome: "SINOMAR MARIANO DE OLIVEIRA",
+  curso: "PROGRAMA DE SEGURANÇA NO TRABALHO",
+  inicio: "03/03/2025",
+  fim: "05/05/2025"
+},
+
+// 02/12/2024 - Dorcas Maria Rodrigues Leite
+{
+  cpf: "57841470134",
+  registro: "20250012095",
+  matricula: "20250012095",
+  nome: "Dorcas Maria Rodrigues Leite",
+  curso: "SAUDE DA MULHER SAÚDE DO ADULTO E DO IDOSO",
+  inicio: "02/12/2024",
+  fim: "20/01/2025"
+},
+
+// 18/03/2025 - Andrea Martins de Oliveira
+{
+  cpf: "00649509137",
+  registro: "20250012096",
+  matricula: "20250012096",
+  nome: "Andrea Martins de Oliveira",
+  curso: "ATENDIMENTO PRÉ-HOSPITALAR",
+  inicio: "18/03/2025",
+  fim: "20/05/2025"
+},
+{
+  cpf: "51265524149",
+  registro: "20230019090",
+  matricula: "20230019090",
+  nome: "ROSICLER LOPES RIBEIRO",
+  curso: "NOÇÕES DE PSICANÁLISE,PSICOPATOLOGIA E CLÍNICA DO INCONSCIENTE",
+  inicio: "13/03/2023",
+  fim: "27/04/2023"
+},
+  {
+    cpf: "02005545147",
+    registro: "20250012097",
+    matricula: "20250012097",
+    nome: "MICHELE BATISTA RODRIGUES",
+    curso: "ATENDIMENTO EDUCACIONAL ESPECIALIZADO - AEE",
+    inicio: "13/08/2024",
+    fim: "15/10/2024"
+  },
+  {
+    cpf: "46296786115",
+    registro: "20250012098",
+    matricula: "20250012098",
+    nome: "DULCINEIA OLIVEIRA FERREIRA",
+    curso: "PROCEDIMENTOS EM CURATIVOS",
+    inicio: "01/04/2024",
+    fim: "24/06/2024"
+  },
+  {
+    cpf: "46296786115",
+    registro: "20250012099",
+    matricula: "20250012099",
+    nome: "DULCINEIA OLIVEIRA FERREIRA",
+    curso: "SAÚDE DA MULHER, DO ADULTO E DO IDOSO",
+    inicio: "01/07/2024",
+    fim: "30/09/2024"
+  },
+  {
+    cpf: "84485906191",
+    registro: "20240033-1",
+    matricula: "20240033-1",
+    nome: "Cristiana Terezinha da Silva",
+    curso: "PÓS-GRADUAÇÃO LATO SENSU EM GESTÃO EM SAÚDE",
+    inicio: "05/06/2023",
+    fim: "15/04/2024"
+},
+{
+    cpf: "77439899172",
+    registro: "20250012101",
+    matricula: "20250012101",
+    nome: "JANETE FERNANDES DOS SANTOS",
+    curso: "EJA INTERVENTIVO",
+    inicio: "04/03/2025",
+    fim: "06/05/2025"
+  },
+  {
+    cpf: "21761116134",
+    registro: "20250012102",
+    matricula: "20250012102",
+    nome: "ELIS MOREIRA DA SILVA",
+    curso: "ÉTICA NO TRABALHO",
+    inicio: "18/03/2025",
+    fim: "20/05/2025"
+  },
+  // 27/06/2025 15:27:39 - Alan
+{
+  cpf: "70671052187",
+  registro: "20250012103",
+  matricula: "20250012103",
+  nome: "Alan Fernandes Galeno",
+  curso: "Aperfeiçoamento em Excelência no Atendimento ao Público",
+  inicio: "16/04/2025",
+  fim: "10/06/2025",
+},
+
+// 27/06/2025 15:44:57 - Marijara
+{
+  cpf: "04267854106",
+  registro: "20250012104",
+  matricula: "20250012104",
+  nome: "Marijara Brisa Gomes Guimaraes",
+  curso: "Defasagem de Aprendizagem",
+  inicio: "04/06/2025",
+  fim: "23/06/2025",
+},
+
+// 27/06/2025 15:51:27 - Marcio
+{
+  cpf: "83704965120",
+  registro: "20250012105",
+  matricula: "20250012105",
+  nome: "Marcio Jose de Oliveira",
+  curso: "Defasagem de Aprendizagem",
+  inicio: "05/05/2025",
+  fim: "30/05/2025",
+},
+
+// 27/06/2025 15:57:42 - Elandia
+{
+  cpf: "81612311172",
+  registro: "20250035-1",
+  matricula: "20250035-1",
+  nome: "Elandia Cristina Lopes Morais",
+  curso: "Pós-graduação Lato Sensu em Gestão Pública",
+  inicio: "10/05/2024",
+  fim: "14/05/2025",
+},
+
+// 27/06/2025 16:04:31 - Denise
+{
+  cpf: "99333708120",
+  registro: "20250034-1",
+  matricula: "20250034-1",
+  nome: "Denise Lacerda Nunes Lopes",
+  curso: "Pós-graduação Lato Sensu em Gestão Pública",
+  inicio: "16/04/2024",
+  fim: "23/04/2025",
+},
+
+// 02/07/2025 17:45:17 - Sheyla
+{
+  cpf: "56332688149",
+  registro: "20240036-1",
+  matricula: "20240036-1",
+  nome: "Sheyl Maria Andrade",
+  curso: "Pós-Graduaação Lato Sensu em Gestão de Pessoas e Recursos Humanos",
+  inicio: "15/06/2024",
+  fim: "21/04/2025",
+},
+
+// 02/07/2025 17:47:41 - Janicleide
+{
+  cpf: "76995810163",
+  registro: "20240037-1",
+  matricula: "20240037-1",
+  nome: "Janicleide Tôrres Bezerra",
+  curso: "Pós-Graduação Lato Sensu em Educação Infantil e Ensino Fundamental",
+  inicio: "07/05/2024",
+  fim: "12/05/2025",
+},
+
+// 03/07/2025 12:02:42 - Katia
+{
+  cpf: "22903151334",
+  registro: "20240038-1",
+  matricula: "20240038-1",
+  nome: "Katia Cilene Marques dos Santos",
+  curso: "Pós-Graduação Lato Sensu em Gestão de Pessoas e Recursos Humanos",
+  inicio: "17/05/2024",
+  fim: "27/05/2025",
+},
+
+// 03/07/2025 12:04:58 - Edson
+{
+  cpf: "00709952309",
+  registro: "20250012111",
+  matricula: "20250012111",
+  nome: "Edson Carlos Manso de Lima",
+  curso: "Vigilância Epidemiológica - Vigilância em Saúde",
+  inicio: "04/03/2025",
+  fim: "22/05/2025",
+},
+// 09/07/2025 18:05:48 - Andrea
+{
+  cpf: "00923173161",
+  registro: "20250012112",
+  matricula: "20250012112",
+  nome: "Andrea Rodrigues de Sousa Lima",
+  curso: "Transtorno do Espectro do Autismo - TEA",
+  inicio: "21/03/2025",
+  fim: "24/04/2025",
+},
+
+// 09/07/2025 18:07:32 - Andreia
+{
+  cpf: "87419378134",
+  registro: "20250012113",
+  matricula: "20250012113",
+  nome: "Andreia Sena Damacena",
+  curso: "Alimentação Saudável Sustentável - Planejamento no Preparo dos Alimentos",
+  inicio: "16/05/2024",
+  fim: "19/06/2024",
+},
+
+// 09/07/2025 18:13:58 - Edson (novo curso)
+{
+  cpf: "00709952309",
+  registro: "20250012114",
+  matricula: "20250012114",
+  nome: "Edson Carlos Manso de Lima",
+  curso: "Planejamento e Gerenciamento de Emergência, Desastres, Epidemias e Pandemias",
+  inicio: "04/03/2025",
+  fim: "22/05/2025",
+},
+// 11/07/2025 14:49:27 - Karla
+{
+  cpf: "64607593168",
+  registro: "20250041-1",
+  matricula: "20250041-1",
+  nome: "Karla Barbosa Gomes",
+  curso: "Pós-Graduação Lato Sensu em Gestão Escolar e Orientação Educacional",
+  inicio: "13/01/2025",
+  fim: "24/06/2025",
+},
+// 11/07/2025 14:50:41 - Genival
+{
+  cpf: "92661629149",
+  registro: "20250040-1",
+  matricula: "20250040-1",
+  nome: "Genival Junior Rosa",
+  curso: "Pós-Graduação Lato Sensu em Engenharia de Desenvolvimento de Produtos",
+  inicio: "27/01/2025",
+  fim: "03/07/2025",
+},
+
+// 11/07/2025 14:52:07 - Francisca
+{
+  cpf: "65698878234",
+  registro: "20250039-1",
+  matricula: "20250039-1",
+  nome: "Francisca Silva do Nascimento",
+  curso: "Pós-Graduação Lato Sensu em Atendimento Educacional Especializado",
+  inicio: "07/11/2024",
+  fim: "12/05/2025",
+},
+// 18/07/2025 12:04:14 - Ana Karina
+{
+  cpf: "55339867153",
+  registro: "20250012118",
+  matricula: "20250012118",
+  nome: "Ana Karina Oliveira Silva Nava",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "21/03/2025",
+  fim: "21/05/2025",
+},
+
+// 18/07/2025 12:11:45 - Gabriela
+{
+  cpf: "00185847137",
+  registro: "20250012119",
+  matricula: "20250012119",
+  nome: "Gabriela Barros Magalhaes de Araujo",
+  curso: "Alfabetização na Educação Infantil e nos Anos Iniciais",
+  inicio: "23/10/2024",
+  fim: "18/12/2024",
+},
+
+// 18/07/2025 12:18:08 - Talita (TEA)
+{
+  cpf: "01168194130",
+  registro: "20250012120",
+  matricula: "20250012120",
+  nome: "Talita Brunelli Santos",
+  curso: "Transtorno do Espectro Autismo",
+  inicio: "06/01/2025",
+  fim: "10/02/2025",
+},
+
+// 18/07/2025 12:23:43 - Talita (AEE)
+{
+  cpf: "01168194130",
+  registro: "20250012121",
+  matricula: "20250012121",
+  nome: "Talita Brunelli Santos",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "17/02/2025",
+  fim: "28/04/2025",
+},
+
+// 18/07/2025 12:27:12 - Talita (Educação Precoce)
+{
+  cpf: "01168194130",
+  registro: "20250012122",
+  matricula: "20250012122",
+  nome: "Talita Brunelli Santos",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "05/05/2025",
+  fim: "02/06/2025",
+},
+// 21/07/2025 18:31:26 - Quiara (AEE)
+{
+  cpf: "95502025187",
+  registro: "20250012123",
+  matricula: "20250012123",
+  nome: "Quiara Marques Montalvão",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "03/03/2025",
+  fim: "29/05/2025",
+},
+
+// 21/07/2025 18:33:26 - Quiara (EJA)
+{
+  cpf: "95502025187",
+  registro: "20250012124",
+  matricula: "20250012124",
+  nome: "Quiara Marques Montalvão",
+  curso: "Educação de Jovens e Adultos - EJA Interventiva",
+  inicio: "03/01/2025",
+  fim: "27/02/2025",
+},
+
+// 21/07/2025 18:35:29 - Julliana (DI)
+{
+  cpf: "05015899106",
+  registro: "20250012125",
+  matricula: "20250012125",
+  nome: "Julliana Kutchenski Oliveira",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "27/03/2025",
+  fim: "29/05/2025",
+},
+
+// 21/07/2025 18:37:00 - Julliana (Deficiências Múltiplas)
+{
+  cpf: "05015899106",
+  registro: "20250012126",
+  matricula: "20250012126",
+  nome: "Julliana Kutchenski Oliveira",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "04/03/2025",
+  fim: "07/05/2025",
+},
+
+// 21/07/2025 18:41:08 - Julliana (Música)
+{
+  cpf: "05015899106",
+  registro: "20250012127",
+  matricula: "20250012127",
+  nome: "Julliana Kutchenski Oliveira",
+  curso: "A Música... Melodia, Harmonia e Ritmo no Desenvolver da Aprendizagem Escolar",
+  inicio: "27/02/2025",
+  fim: "28/04/2025",
+},
+
+// 21/07/2025 18:42:41 - Julliana (AEE)
+{
+  cpf: "05015899106",
+  registro: "20250012128",
+  matricula: "20250012128",
+  nome: "Julliana Kutchenski Oliveira",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "03/01/2025",
+  fim: "13/03/2025",
+},
+{
+  cpf: "04628849102",
+  registro: "20250012129",
+  matricula: "20250012129",
+  nome: "Elizangela Fernanda da Silva",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "10/03/2025",
+  fim: "12/05/2025",
+},
+// GLAUCE ROSE VELOSO SILVA MENDES
+{
+  cpf: "94915130363",
+  registro: "20250012130",
+  matricula: "20250012130",
+  nome: "Glauce Rose Veloso Silva Mendes",
+  curso: "Superior de Complementação de Estudos em Gestão em Segurança Pública e Privada",
+  inicio: "21/01/2025",
+  fim: "16/06/2025",
+},
+
+// QUIARA MARQUES MONTALVÃO
+{
+  cpf: "95502025187",
+  registro: "20250012131",
+  matricula: "20250012131",
+  nome: "Quiara Marques Montalvão",
+  curso: "Deficiências Múltiplas - Saberes e Práticas da Inclusão",
+  inicio: "14/04/2025",
+  fim: "16/06/2025",
+},
+
+// ANDRÉA AMOEDO DE VICTOR COUTINHO
+{
+  cpf: "93349432115",
+  registro: "20250012132",
+  matricula: "20250012132",
+  nome: "Andréa Amoedo de Victor Coutinho",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "04/06/2025",
+  fim: "23/07/2025",
+},
+// JOYCELAINE RODRIGUES CONCEIÇÃO NEIVA
+{
+  cpf: "00124503160",
+  registro: "20250043-1",
+  matricula: "20250043-1",
+  nome: "Joycelaine Rodrigues Conceição Neiva",
+  curso: "Pós-Graduação Lato Sensu em Neuropsicopedagogia Institucional e Clínica",
+  inicio: "24/06/2024",
+  fim: "22/07/2025",
+},
+
+// FRANCISCO RIBENE DE LIMA ALMEIDA
+{
+  cpf: "51983516287",
+  registro: "20250042-1",
+  matricula: "20250042-1",
+  nome: "Francisco Ribene de Lima Almeida",
+  curso: "Pós-Graduação Lato Sensu em Gestão Escolar (Administração, Coordenação, Orientação, Supervisão e Inspeção Escolar)",
+  inicio: "24/06/2024",
+  fim: "24/06/2025",
+},
+// LARISSA CAROLINE DA SILVA REIS
+{
+  cpf: "04468685158",
+  registro: "20250012135",
+  matricula: "20250012135",
+  nome: "Larissa Caroline da Silva Reis",
+  curso: "Transtorno do Espectro Austismo - TEA",
+  inicio: "02/06/2025",
+  fim: "31/07/2025",
+},
+
+// NEURILENI DE JESUS CARVALHO
+{
+  cpf: "41743598149",
+  registro: "20250012136",
+  matricula: "20250012136",
+  nome: "Neurileni de Jesus Carvalho",
+  curso: "Deficiências Múltiplas",
+  inicio: "03/03/2025",
+  fim: "26/05/2025",
+},
+// ANA CRISTINA DA SILVA
+{
+  cpf: "79107230168",
+  registro: "2025001158",
+  matricula: "2025001158",
+  nome: "Ana Cristina da Silva",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "03/03/2025",
+  fim: "26/05/2025",
+},
+
+// TALITA BRUNELLI SANTOS
+{
+  cpf: "01168194130",
+  registro: "2025001161",
+  matricula: "2025001161",
+  nome: "Talita Brunelli Santos",
+  curso: "Deficiência Intelectual",
+  inicio: "20/07/2024",
+  fim: "28/08/2024",
+},
+
+// TALITA BRUNELLI SANTOS
+{
+  cpf: "01168194130",
+  registro: "2025001162",
+  matricula: "2025001162",
+  nome: "Talita Brunelli Santos",
+  curso: "Deficiências Múltiplas",
+  inicio: "11/09/2024",
+  fim: "14/10/2024",
+},
+// JORGE CARVALHO GONÇALVES
+{
+  cpf: "56341997191",
+  registro: "20250012137",
+  matricula: "20250012137",
+  nome: "Jorge Carvalho Gonçalves",
+  curso: "Atletismo: Metodologia do Treinamento Desportivo",
+  inicio: "05/08/2024",
+  fim: "20/12/2024",
+},
+// ANDREA RODRIGUES DE SOUSA LIMA
+{
+  cpf: "00923173161",
+  registro: "2025001162",
+  matricula: "2025001162",
+  nome: "Andrea Rodrigues de Sousa Lima",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "03/02/2025",
+  fim: "17/03/2025",
+},
+// ROSÂNGELA OLIVEIRA GARCIA DA SILVA
+{
+  cpf: "88929400159",
+  registro: "2025001164",
+  matricula: "2025001164",
+  nome: "Rosângela Oliveira Garcia da Silva",
+  curso: "EJA Interventivo",
+  inicio: "03/02/2025",
+  fim: "07/07/2025",
+},
+// CLEBER VINÍCIUS SOUZA LIMA
+{
+  cpf: "11618995707",
+  registro: "20250036-1",
+  matricula: "20250036-1",
+  nome: "Cleber Vinícius Souza Lima",
+  curso: "Pós-Graduação Lato Sensu em Auditoria Controladoria e Finanças",
+  inicio: "20/06/2024",
+  fim: "25/06/2025",
+},
+
+// JAILSON MOREIRA ROCHA
+{
+  cpf: "62080369334",
+  registro: "20250045-2",
+  matricula: "20250045-2",
+  nome: "Jailson Moreira Rocha",
+  curso: "Pós-Graduação Lato Sensu em Psicopedagogia Clínica e Institucional",
+  inicio: "07/09/2024",
+  fim: "01/09/2025",
+},
+
+// MÁRCIA RIBEIRO CHAGAS
+{
+  cpf: "00488347505",
+  registro: "20250047-1",
+  matricula: "20250047-1",
+  nome: "Márcia Ribeiro Chagas",
+  curso: "Pós-Graduação Lato Sensu em Alfabetização e Letramento",
+  inicio: "07/09/2024",
+  fim: "01/09/2025",
+},
+// ISABELLA CAVALCANTE FERREIRA
+{
+  cpf: "01028282109",
+  registro: "2025001168",
+  matricula: "2025001168",
+  nome: "Isabella Cavalcante Ferreira",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "06/01/2025",
+  fim: "26/02/2025",
+},
+
+// ISABELLA CAVALCANTE FERREIRA
+{
+  cpf: "01028282109",
+  registro: "2025001169",
+  matricula: "2025001169",
+  nome: "Isabella Cavalcante Ferreira",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "03/03/2025",
+  fim: "29/04/2025",
+},
+
+// JANICLEIDE TÔRRES BEZERRA
+{
+  cpf: "76995810163",
+  registro: "2025001166",
+  matricula: "2025001166",
+  nome: "Janicleide Tôrres Bezerra",
+  curso: "Alfabetização na Educação Infantil e nos Anos Iniciais",
+  inicio: "26/05/2025",
+  fim: "21/07/2025",
+},
+// LUCIANA CRISTINA DA SILVA SARAIVA
+{
+  cpf: "69806705149",
+  registro: "2025001165",
+  matricula: "2025001165",
+  nome: "Luciana Cristina da Silva Saraiva",
+  curso: "BNCC nos Anos Finais do Ensino Fundamental: Língua Portuguesa",
+  inicio: "26/02/2025",
+  fim: "14/08/2025",
+},
+// MARIA TORQUATO MOREIRA RODRIGUES
+{
+  cpf: "48038091191",
+  registro: "2025001170",
+  matricula: "2025001170",
+  nome: "Maria Torquato Moreira Rodrigues",
+  curso: "A Arte de Contar Histórias",
+  inicio: "02/06/2025",
+  fim: "04/08/2025",
+},
+
+// MARIA TORQUATO MOREIRA RODRIGUES
+{
+  cpf: "48038091191",
+  registro: "2025001171",
+  matricula: "2025001171",
+  nome: "Maria Torquato Moreira Rodrigues",
+  curso: "Alfabetização na Educação Infantil e nos Anos Iniciais",
+  inicio: "01/05/2025",
+  fim: "30/05/2025",
+},
+
+// MARIA TORQUATO MOREIRA RODRIGUES
+{
+  cpf: "48038091191",
+  registro: "2025001172",
+  matricula: "2025001172",
+  nome: "Maria Torquato Moreira Rodrigues",
+  curso: "Jogos e Ludicidade na Educação",
+  inicio: "01/04/2025",
+  fim: "29/04/2025",
+},
+
+// MARIA TORQUATO MOREIRA RODRIGUES
+{
+  cpf: "48038091191",
+  registro: "2025001173",
+  matricula: "2025001173",
+  nome: "Maria Torquato Moreira Rodrigues",
+  curso: "Psicomotricidade e a Relação com o Ambiente",
+  inicio: "03/03/2025",
+  fim: "27/03/2025",
+},
+
+// ANA MARIA PEREIRA DA SILVA COSTA
+{
+  cpf: "78877083115",
+  registro: "2025001174",
+  matricula: "2025001174",
+  nome: "Ana Maria Pereira da Silva Costa",
+  curso: "Transtorno do Espectro Austista - TEA",
+  inicio: "03/02/2025",
+  fim: "29/04/2025",
+},
+
+// ANA MARIA PEREIRA DA SILVA COSTA
+{
+  cpf: "78877083115",
+  registro: "2025001167",
+  matricula: "2025001167",
+  nome: "Ana Maria Pereira da Silva Costa",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "01/05/2025",
+  fim: "26/06/2025",
+},
+// JAMARA CRISTINA DAS CHAGAS RIBEIRO
+{
+  cpf: "06660474641",
+  registro: "20240048-2",
+  matricula: "20240048-2",
+  nome: "Jamara Cristina das Chagas Ribeiro",
+  curso: "Pós-Graduação Lato Sensu em Gestão de Projetos",
+  inicio: "15/03/2024",
+  fim: "12/12/2024",
+},
+// VANEIDE MARQUES DE FARIAS DANTAS
+{
+  cpf: "51224780159",
+  registro: "2025001175",
+  matricula: "2025001175",
+  nome: "Vaneide Marques de Farias Dantas",
+  curso: "Educação Inclusiva e Especial",
+  inicio: "02/05/2025",
+  fim: "29/05/2025",
+},
+
+// VANEIDE MARQUES DE FARIAS DANTAS
+{
+  cpf: "51224780159",
+  registro: "2025001176",
+  matricula: "2025001176",
+  nome: "Vaneide Marques de Farias Dantas",
+  curso: "A Arte de Contar Histórias",
+  inicio: "02/04/2025",
+  fim: "29/04/2025",
+},
+
+// VANEIDE MARQUES DE FARIAS DANTAS
+{
+  cpf: "51224780159",
+  registro: "2025001177",
+  matricula: "2025001177",
+  nome: "Vaneide Marques de Farias Dantas",
+  curso: "Jogos e Ludicidade na Educação",
+  inicio: "03/03/2025",
+  fim: "27/03/2025",
+},
+
+// CARLA DRUMOND DA COSTA
+{
+  cpf: "00425404102",
+  registro: "2025001210",
+  matricula: "2025001210",
+  nome: "Carla Drumond da Costa",
+  curso: "O Lúdico no Desenvolvimento da Aprendizagem",
+  inicio: "11/09/2024",
+  fim: "04/11/2024",
+},
+
+// KARLA CYNTHIA NUNES
+{
+  cpf: "80481698191",
+  registro: "2025001178",
+  matricula: "2025001178",
+  nome: "Karla Cynthia Nunes",
+  curso: "A Linguagem e a Escrita nas Séries Iniciais",
+  inicio: "24/04/2025",
+  fim: "26/06/2025",
+},
+
+// ELIZA CEZARIO DA SILVA FERREIRA
+{
+  cpf: "01653924101",
+  registro: "2025001215",
+  matricula: "2025001215",
+  nome: "Eliza Cezario da Silva Ferreira",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "02/04/2025",
+  fim: "26/06/2025",
+},
+
+// KARLA CYNTHIA NUNES
+{
+  cpf: "80481698192",
+  registro: "2025001179",
+  matricula: "2025001179",
+  nome: "Karla Cynthia Nunes",
+  curso: "Alfabetização e Letramento: O Caminho para o Futuro",
+  inicio: "26/03/2025",
+  fim: "29/05/2025",
+},
+
+// KARLA CYNTHIA NUNES
+{
+  cpf: "80481698193",
+  registro: "2025001180",
+  matricula: "2025001180",
+  nome: "Karla Cynthia Nunes",
+  curso: "Fundamentos da Alfabetização e Letramento",
+  inicio: "14/02/2025",
+  fim: "10/04/2025",
+},
+
+// SUELY DE FATIMA PEREIRA
+{
+  cpf: "61999385187",
+  registro: "2025001186",
+  matricula: "2025001186",
+  nome: "Suely de Fatima Pereira",
+  curso: "Alfabetização na Educação Infantil e nos Anos Iniciais",
+  inicio: "20/12/2024",
+  fim: "27/02/2025",
+},
+
+// SUELY DE FATIMA PEREIRA
+{
+  cpf: "61999385187",
+  registro: "2025001185",
+  matricula: "2025001185",
+  nome: "Suely de Fatima Pereira",
+  curso: "Teorias e Práticas de Ensino nas Séries Iniciais do Ensino Fundamental",
+  inicio: "28/01/2025",
+  fim: "26/03/2025",
+},
+
+// SUELY DE FATIMA PEREIRA
+{
+  cpf: "61999385187",
+  registro: "2025001184",
+  matricula: "2025001184",
+  nome: "Suely de Fatima Pereira",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "06/01/2025",
+  fim: "03/03/2025",
+},
+
+// SUELY DE FATIMA PEREIRA
+{
+  cpf: "61999385187",
+  registro: "2025001181",
+  matricula: "2025001181",
+  nome: "Suely de Fatima Pereira",
+  curso: "EJA Interventiva",
+  inicio: "02/04/2025",
+  fim: "26/06/2025",
+},
+
+// SUELY DE FATIMA PEREIRA
+{
+  cpf: "61999385187",
+  registro: "2025001182",
+  matricula: "2025001182",
+  nome: "Suely de Fatima Pereira",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// SUELY DE FATIMA PEREIRA
+{
+  cpf: "61999385187",
+  registro: "2025001183",
+  matricula: "2025001183",
+  nome: "Suely de Fatima Pereira",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// CELIA SANTANA RIOS DA SILVA
+{
+  cpf: "47307684187",
+  registro: "2025001190",
+  matricula: "2025001190",
+  nome: "Celia Santana Rios da Silva",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "06/01/2025",
+  fim: "03/03/2025",
+},
+
+// CELIA SANTANA RIOS DA SILVA
+{
+  cpf: "47307684187",
+  registro: "2025001189",
+  matricula: "2025001189",
+  nome: "Celia Santana Rios da Silva",
+  curso: "Deficiência Intelectual",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// CELIA SANTANA RIOS DA SILVA
+{
+  cpf: "47307684187",
+  registro: "2025001187",
+  matricula: "2025001187",
+  nome: "Celia Santana Rios da Silva",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "02/04/2025",
+  fim: "26/06/2025",
+},
+
+// CELIA SANTANA RIOS DA SILVA
+{
+  cpf: "47307684187",
+  registro: "2025001188",
+  matricula: "2025001188",
+  nome: "Celia Santana Rios da Silva",
+  curso: "Educação em Cidadania",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// CELIA SANTANA RIOS DA SILVA
+{
+  cpf: "47307684187",
+  registro: "2025001191",
+  matricula: "2025001191",
+  nome: "Celia Santana Rios da Silva",
+  curso: "Educação Infantil - Um Novo Olhar",
+  inicio: "28/01/2025",
+  fim: "26/03/2025",
+},
+
+// GILDETE PEREIRA RIBEIRO DOS SANTOS
+{
+  cpf: "61121037100",
+  registro: "2025001198",
+  matricula: "2025001198",
+  nome: "Gildete Pereira Ribeiro dos Santos",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "02/04/2025",
+  fim: "26/06/2025",
+},
+// MARIA AUXILIADORA ALMEIDA DE SOUSA
+{
+  cpf: "71426493487",
+  registro: "20250012142",
+  matricula: "20250012142",
+  nome: "Maria Auxiliadora Almeida de Sousa",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// MARIA AUXILIADORA ALMEIDA DE SOUSA
+{
+  cpf: "71426493487",
+  registro: "20250012143",
+  matricula: "20250012143",
+  nome: "Maria Auxiliadora Almeida de Sousa",
+  curso: "EJA Interventiva",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// ANA PAULA DE ANDRADE DA VEIGA
+{
+  cpf: "01014399114",
+  registro: "2025001192",
+  matricula: "2025001192",
+  nome: "Ana Paula de Andrade da Veiga",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// ANA PAULA DE ANDRADE DA VEIGA
+{
+  cpf: "01014399114",
+  registro: "2025001201",
+  matricula: "2025001201",
+  nome: "Ana Paula de Andrade da Veiga",
+  curso: "Deficiência Intelectual",
+  inicio: "27/11/2024",
+  fim: "19/12/2024",
+},
+
+// ANA PAULA DE ANDRADE DA VEIGA
+{
+  cpf: "01014399114",
+  registro: "2025001202",
+  matricula: "2025001202",
+  nome: "Ana Paula de Andrade da Veiga",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "27/11/2024",
+  fim: "19/12/2024",
+},
+
+// MARNIZIA FARIAS MOTA
+{
+  cpf: "56439571168",
+  registro: "2025001193",
+  matricula: "2025001193",
+  nome: "Marnizia Farias Mota",
+  curso: "Alfabetização e Letramento: O Caminho para o Futuro",
+  inicio: "02/04/2025",
+  fim: "26/06/2025",
+},
+
+// MARIA AUXILIADORA ALMEIDA DE SOUSA
+{
+  cpf: "71426493487",
+  registro: "2025001194",
+  matricula: "2025001194",
+  nome: "Maria Auxiliadora Almeida de Sousa",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "02/04/2025",
+  fim: "26/06/2025",
+},
+
+// MARIZA ARANTE CAMPOS RODRIGUES
+{
+  cpf: "92956297104",
+  registro: "2025001197",
+  matricula: "2025001197",
+  nome: "Mariza Arante Campos Rodrigues",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "02/04/2025",
+  fim: "26/06/2025",
+},
+
+// MARIZA ARANTE CAMPOS RODRIGUES
+{
+  cpf: "92956297104",
+  registro: "2025001199",
+  matricula: "2025001199",
+  nome: "Mariza Arante Campos Rodrigues",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// MARIZA ARANTE CAMPOS RODRIGUES
+{
+  cpf: "92956297104",
+  registro: "2025001200",
+  matricula: "2025001200",
+  nome: "Mariza Arante Campos Rodrigues",
+  curso: "EJA Interventiva",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// SUELLE PAOLLA OLIVEIRA DE ARAUJO PRAZERES
+{
+  cpf: "66767458287",
+  registro: "2025001207",
+  matricula: "2025001207",
+  nome: "Suelle Paolla Oliveira de Araujo Prazeres",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "02/04/2025",
+  fim: "26/06/2025",
+},
+
+// SUELLE PAOLLA OLIVEIRA DE ARAUJO PRAZERES
+{
+  cpf: "66767458287",
+  registro: "2025001208",
+  matricula: "2025001208",
+  nome: "Suelle Paolla Oliveira de Araujo Prazeres",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// SUELLE PAOLLA OLIVEIRA DE ARAUJO PRAZERES
+{
+  cpf: "66767458287",
+  registro: "2025001209",
+  matricula: "2025001209",
+  nome: "Suelle Paolla Oliveira de Araujo Prazeres",
+  curso: "EJA Interventiva",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// MONICA DA SILVA LOPES
+{
+  cpf: "78849381115",
+  registro: "2025001203",
+  matricula: "2025001203",
+  nome: "Monica da Silva Lopes",
+  curso: "Transtorno do Espectro Austista",
+  inicio: "02/04/2025",
+  fim: "26/06/2025",
+},
+
+// MONICA DA SILVA LOPES
+{
+  cpf: "78849381115",
+  registro: "2025001204",
+  matricula: "2025001204",
+  nome: "Monica da Silva Lopes",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "03/02/2025",
+  fim: "27/03/2025",
+},
+
+// MONICA DA SILVA LOPES
+{
+  cpf: "78849381115",
+  registro: "2025001205",
+  matricula: "2025001205",
+  nome: "Monica da Silva Lopes",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "02/12/2024",
+  fim: "30/01/2025",
+},
+
+// MONICA DA SILVA LOPES
+{
+  cpf: "78849381115",
+  registro: "2025001206",
+  matricula: "2025001206",
+  nome: "Monica da Silva Lopes",
+  curso: "Altas Habilidades Superdotação",
+  inicio: "10/09/2024",
+  fim: "27/11/2024",
+},
+// MARIA VANDA GONÇALVES MENDES
+{
+  cpf: "00229811108",
+  registro: "2025001211",
+  matricula: "2025001211",
+  nome: "Maria Vanda Gonçalves Mendes",
+  curso: "Deficiência Intelectual",
+  inicio: "10/09/2024",
+  fim: "27/11/2024",
+},
+
+// MARIA VANDA GONÇALVES MENDES
+{
+  cpf: "00229811108",
+  registro: "2025001212",
+  matricula: "2025001212",
+  nome: "Maria Vanda Gonçalves Mendes",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "02/06/2025",
+  fim: "28/07/2025",
+},
+
+// MARIA VANDA GONÇALVES MENDES
+{
+  cpf: "00229811108",
+  registro: "2025001216",
+  matricula: "2025001216",
+  nome: "Maria Vanda Gonçalves Mendes",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "19/02/2025",
+  fim: "27/03/2025",
+},
+
+// MARIA VANDA GONÇALVES MENDES
+{
+  cpf: "00229811108",
+  registro: "2025001213",
+  matricula: "2025001213",
+  nome: "Maria Vanda Gonçalves Mendes",
+  curso: "Dislexia",
+  inicio: "25/03/2025",
+  fim: "24/04/2025",
+},
+// SIMONE GOMES DA SILVA
+{
+  cpf: "00620986751",
+  registro: "2025001214",
+  matricula: "2025001214",
+  nome: "Simone Gomes da Silva",
+  curso: "Alfabetização e Letramento",
+  inicio: "02/06/2025",
+  fim: "28/07/2025",
+},
+
+// MARINILDE LEMOS COSTA GOVEIA
+{
+  cpf: "00922238340",
+  registro: "2025001217",
+  matricula: "2025001217",
+  nome: "Marinilde Lemos Costa Goveia",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "19/02/2025",
+  fim: "27/03/2025",
+},
+
+// MARINILDE LEMOS COSTA GOVEIA
+{
+  cpf: "00922238340",
+  registro: "2025001218",
+  matricula: "2025001218",
+  nome: "Marinilde Lemos Costa Goveia",
+  curso: "Deficiência Visual e o Sistema Braille",
+  inicio: "15/04/2025",
+  fim: "20/05/2025",
+},
+
+// MARINILDE LEMOS COSTA GOVEIA
+{
+  cpf: "00922238340",
+  registro: "2025001219",
+  matricula: "2025001219",
+  nome: "Marinilde Lemos Costa Goveia",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "02/06/2025",
+  fim: "22/07/2025",
+},
+
+// GENICE RIBEIRO FELISMINO
+{
+  cpf: "47644982191",
+  registro: "20250049-1",
+  matricula: "20250049-1",
+  nome: "Genice Ribeiro Felismino",
+  curso: "Pós-Graduação Lato Sensu em Atendimento Educacional Especializado",
+  inicio: "07/06/2024",
+  fim: "02/06/2025",
+},
+// VALDSON BATISTA DE SOUZA
+{
+  cpf: "47204818172",
+  registro: "20250050-2",
+  matricula: "20250050-2",
+  nome: "Valdson Batista de Souza",
+  curso: "Pós-Graduação Lato Sensu em Comunicação Social",
+  inicio: "13/01/2025",
+  fim: "28/07/2025",
+},
+
+// JADER LIMA GOMES
+{
+  cpf: "00164218173",
+  registro: "20250051-2",
+  matricula: "20250051-2",
+  nome: "Jader Lima Gomes",
+  curso: "Pós-Graduação Lato Sensu em Gestão Pública",
+  inicio: "13/07/2024",
+  fim: "28/07/2025",
+},
+// ANA KARINA OLIVEIRA SILVA NAVA
+{
+  cpf: "55339867153",
+  registro: "2025001220",
+  matricula: "2025001220",
+  nome: "Ana Karina Oliveira Silva Nava",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// ANA KARINA OLIVEIRA SILVA NAVA
+{
+  cpf: "55339867153",
+  registro: "2025001221",
+  matricula: "2025001221",
+  nome: "Ana Karina Oliveira Silva Nava",
+  curso: "Deficiências Intelectuais - DI",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// ANA KARINA OLIVEIRA SILVA NAVA
+{
+  cpf: "55339867153",
+  registro: "2025001222",
+  matricula: "2025001222",
+  nome: "Ana Karina Oliveira Silva Nava",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "28/01/2025",
+  fim: "26/03/2025",
+},
+
+// ANA LUÍSA PEREIRA DA SILVA
+{
+  cpf: "04493256109",
+  registro: "2025001233",
+  matricula: "2025001233",
+  nome: "Ana Luísa Pereira da Silva",
+  curso: "Deficiências Intelectuais - DI",
+  inicio: "19/05/2025",
+  fim: "21/07/2025",
+},
+
+// JULIANA VITORINO CHIMITI
+{
+  cpf: "00217445136",
+  registro: "2025001223",
+  matricula: "2025001223",
+  nome: "Juliana Vitorino Chimiti",
+  curso: "Estimulação Precoce e o Desenvolvimento Infantil",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// JULIANA VITORINO CHIMITI
+{
+  cpf: "00217445136",
+  registro: "2025001229",
+  matricula: "2025001229",
+  nome: "Juliana Vitorino Chimiti",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// JULIANA VITORINO CHIMITI
+{
+  cpf: "00217445136",
+  registro: "2025001225",
+  matricula: "2025001225",
+  nome: "Juliana Vitorino Chimiti",
+  curso: "Transtornos Globais do Desenvolvimento",
+  inicio: "02/04/2025",
+  fim: "26/06/2025",
+},
+
+// LAYLA APARECIDA LOURENÇO GONÇALVES DE CARVALHO
+{
+  cpf: "05138065122",
+  registro: "2025001224",
+  matricula: "2025001224",
+  nome: "Layla Aparecida Lourenço Gonçalves de Carvalho",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "03/02/2025",
+  fim: "27/03/2025",
+},
+
+// LAYLA APARECIDA LOURENÇO GONÇALVES DE CARVALHO
+{
+  cpf: "05138065122",
+  registro: "2025001230",
+  matricula: "2025001230",
+  nome: "Layla Aparecida Lourenço Gonçalves de Carvalho",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "04/03/2025",
+  fim: "23/04/2025",
+},
+
+// LAYLA APARECIDA LOURENÇO GONÇALVES DE CARVALHO
+{
+  cpf: "05138065122",
+  registro: "2025001231",
+  matricula: "2025001231",
+  nome: "Layla Aparecida Lourenço Gonçalves de Carvalho",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "07/04/2025",
+  fim: "29/05/2025",
+},
+
+// LAYLA APARECIDA LOURENÇO GONÇALVES DE CARVALHO
+{
+  cpf: "05138065122",
+  registro: "2025001232",
+  matricula: "2025001232",
+  nome: "Layla Aparecida Lourenço Gonçalves de Carvalho",
+  curso: "Deficiências Intelectuais - DI",
+  inicio: "01/05/2025",
+  fim: "28/06/2025",
+},
+
+// ALINE APARECIDA LOURENÇO DOS SANTOS COSTA
+{
+  cpf: "01028951124",
+  registro: "2025001240",
+  matricula: "2025001240",
+  nome: "Aline Aparecida Lourenço dos Santos Costa",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "03/02/2025",
+  fim: "27/03/2025",
+},
+
+// ALINE APARECIDA LOURENÇO DOS SANTOS COSTA
+{
+  cpf: "01028951124",
+  registro: "2025001241",
+  matricula: "2025001241",
+  nome: "Aline Aparecida Lourenço dos Santos Costa",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "04/03/2025",
+  fim: "23/04/2025",
+},
+
+// ALINE APARECIDA LOURENÇO DOS SANTOS COSTA
+{
+  cpf: "01028951124",
+  registro: "2025001242",
+  matricula: "2025001242",
+  nome: "Aline Aparecida Lourenço dos Santos Costa",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "07/04/2025",
+  fim: "29/05/2025",
+},
+
+// ALINE APARECIDA LOURENÇO DOS SANTOS COSTA
+{
+  cpf: "01028951124",
+  registro: "2025001243",
+  matricula: "2025001243",
+  nome: "Aline Aparecida Lourenço dos Santos Costa",
+  curso: "Deficiências Intelectuais - DI",
+  inicio: "01/05/2025",
+  fim: "28/06/2025",
+},
+
+// ELIZANGELA FERNANDA DA SILVA
+{
+  cpf: "04628849102",
+  registro: "2025001235",
+  matricula: "2025001235",
+  nome: "Elizangela Fernanda da Silva",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "02/04/2025",
+  fim: "26/06/2025",
+},
+
+// ELIZANGELA FERNANDA DA SILVA
+{
+  cpf: "04628849102",
+  registro: "2025001236",
+  matricula: "2025001236",
+  nome: "Elizangela Fernanda da Silva",
+  curso: "Transtorno Global do Desenvolvimento - Um Novo Olhar",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// ELIZANGELA FERNANDA DA SILVA
+{
+  cpf: "04628849102",
+  registro: "2025001237",
+  matricula: "2025001237",
+  nome: "Elizangela Fernanda da Silva",
+  curso: "EJA Interventiva",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// ELIZANGELA FERNANDA DA SILVA
+{
+  cpf: "04628849102",
+  registro: "2025001238",
+  matricula: "2025001238",
+  nome: "Elizangela Fernanda da Silva",
+  curso: "Informática Educativa para a Educação Especial",
+  inicio: "06/01/2025",
+  fim: "03/03/2025",
+},
+
+// ELIZANGELA FERNANDA DA SILVA
+{
+  cpf: "04628849102",
+  registro: "2025001239",
+  matricula: "2025001239",
+  nome: "Elizangela Fernanda da Silva",
+  curso: "Sala de Recursos Generalista",
+  inicio: "28/01/2025",
+  fim: "26/03/2025",
+},
+// ANDREA RODRIGUES DE SOUSA LIMA
+{
+  cpf: "00923173161",
+  registro: "2025001247",
+  matricula: "2025001247",
+  nome: "Andrea Rodrigues de Sousa Lima",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "05/05/2025",
+  fim: "25/06/2025",
+},
+
+// ANDERSON GABRIEL TORRES
+{
+  cpf: "00610973142",
+  registro: "2025001249",
+  matricula: "2025001249",
+  nome: "Anderson Gabriel Torres",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// ANDERSON GABRIEL TORRES
+{
+  cpf: "00610973142",
+  registro: "2025001250",
+  matricula: "2025001250",
+  nome: "Anderson Gabriel Torres",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// ANDERSON GABRIEL TORRES
+{
+  cpf: "00610973142",
+  registro: "2025001251",
+  matricula: "2025001251",
+  nome: "Anderson Gabriel Torres",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// CINTIA DANIELA DE CASTRO
+{
+  cpf: "50829505172",
+  registro: "2025001246",
+  matricula: "2025001246",
+  nome: "Cintia Daniela de Castro",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "20/02/2025",
+  fim: "25/03/2025",
+},
+
+// CINTIA DANIELA DE CASTRO
+{
+  cpf: "50829505172",
+  registro: "2025001245",
+  matricula: "2025001245",
+  nome: "Cintia Daniela de Castro",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "06/01/2025",
+  fim: "12/02/2025",
+},
+
+// ANA CARINE CARDOSO NERI
+{
+  cpf: "00272843105",
+  registro: "2025001227",
+  matricula: "2025001227",
+  nome: "Ana Carine Cardoso Neri",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "06/01/2025",
+  fim: "12/02/2025",
+},
+
+// ANA CARINE CARDOSO NERI
+{
+  cpf: "00272843105",
+  registro: "2025001228",
+  matricula: "2025001228",
+  nome: "Ana Carine Cardoso Neri",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "20/02/2025",
+  fim: "25/03/2025",
+},
+
+// RODOLFO HENRIQUE RODRIGUES REZENDE
+{
+  cpf: "73479713149",
+  registro: "2025001234",
+  matricula: "2025001234",
+  nome: "Rodolfo Henrique Rodrigues Rezende",
+  curso: "EJA Interventiva",
+  inicio: "02/04/2025",
+  fim: "26/06/2025",
+},
+// MÁRCIA FERREIRA DE ARAUJO SILVA
+{
+  cpf: "00101793138",
+  registro: "2025001252",
+  matricula: "2025001252",
+  nome: "Márcia Ferreira de Araujo Silva",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// KAYQUE PEDRO DA SILVA
+{
+  cpf: "03113141125",
+  registro: "2025001253",
+  matricula: "2025001253",
+  nome: "Kayque Pedro da Silva",
+  curso: "EJA Interventiva",
+  inicio: "02/04/2025",
+  fim: "26/06/2025",
+},
+
+// IOLANDA RODRIGUES DA CONCEIÇÃO
+{
+  cpf: "03538066175",
+  registro: "2025001263",
+  matricula: "2025001263",
+  nome: "Iolanda Rodrigues da Conceição",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "05/05/2025",
+  fim: "02/06/2025",
+},
+
+// REGINA DA SILVA LEAL
+{
+  cpf: "02294371178",
+  registro: "2025001244",
+  matricula: "2025001244",
+  nome: "Regina da Silva Leal",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "07/04/2025",
+  fim: "29/05/2025",
+},
+{
+  cpf: "02294371178",
+  registro: "2025001266",
+  matricula: "2025001266",
+  nome: "Regina da Silva Leal",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "03/02/2025",
+  fim: "17/03/2025",
+},
+
+// VANESSA LUCAS DE OLIVEIRA VIANA
+{
+  cpf: "03071557140",
+  registro: "2025001165",
+  matricula: "2025001165",
+  nome: "Vanessa Lucas de Oliveira Viana",
+  curso: "Deficiências Intelectuais - DI",
+  inicio: "04/04/2025",
+  fim: "24/04/2025",
+},
+{
+  cpf: "03071557140",
+  registro: "2025001164",
+  matricula: "2025001164",
+  nome: "Vanessa Lucas de Oliveira Viana",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "01/05/2025",
+  fim: "29/05/2025",
+},
+
+// LETÍCIA RODRIGUES DE ALBUQUERQUE DA SILVA
+{
+  cpf: "02048197175",
+  registro: "2025001159",
+  matricula: "2025001159",
+  nome: "Letícia Rodrigues de Albuquerque da Silva",
+  curso: "Ledor e Transcritor",
+  inicio: "06/01/2025",
+  fim: "30/01/2025",
+},
+{
+  cpf: "02048197175",
+  registro: "2025001158",
+  matricula: "2025001158",
+  nome: "Letícia Rodrigues de Albuquerque da Silva",
+  curso: "EJA Interventiva",
+  inicio: "03/02/2025",
+  fim: "27/02/2025",
+},
+{
+  cpf: "02048197175",
+  registro: "2025001157",
+  matricula: "2025001157",
+  nome: "Letícia Rodrigues de Albuquerque da Silva",
+  curso: "Educação Precoce e Desenvolvimento Infantil",
+  inicio: "03/03/2025",
+  fim: "27/03/2025",
+},
+{
+  cpf: "02048197175",
+  registro: "2025001156",
+  matricula: "2025001156",
+  nome: "Letícia Rodrigues de Albuquerque da Silva",
+  curso: "Deficiências Intelectuais - DI",
+  inicio: "04/04/2025",
+  fim: "24/04/2025",
+},
+{
+  cpf: "02048197175",
+  registro: "2025001155",
+  matricula: "2025001155",
+  nome: "Letícia Rodrigues de Albuquerque da Silva",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "01/05/2025",
+  fim: "29/05/2025",
+},
+{
+  cpf: "02048197175",
+  registro: "2025001154",
+  matricula: "2025001154",
+  nome: "Letícia Rodrigues de Albuquerque da Silva",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "03/03/2025",
+  fim: "30/06/2025",
+},
+
+// RENATA FROTA DA ROCHA
+{
+  cpf: "85756830120",
+  registro: "2025001226",
+  matricula: "2025001226",
+  nome: "Renata Frota da Rocha",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "20/05/2025",
+  fim: "22/07/2025",
+},
+
+// ANDRÉIA CRISTINA FERREIRA DE SOUZA DE BARROS
+{
+  cpf: "69703531172",
+  registro: "2025001268",
+  matricula: "2025001268",
+  nome: "Andréia Cristina Ferreira de Souza de Barros",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+{
+  cpf: "69703531172",
+  registro: "2025001269",
+  matricula: "2025001269",
+  nome: "Andréia Cristina Ferreira de Souza de Barros",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+{
+  cpf: "69703531172",
+  registro: "2025001270",
+  matricula: "2025001270",
+  nome: "Andréia Cristina Ferreira de Souza de Barros",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// FABIANA FERNANDES DE ARAUJO OLIVEIRA
+{
+  cpf: "08029396600",
+  registro: "2025001267",
+  matricula: "2025001267",
+  nome: "Fabiana Fernandes de Araujo Oliveira",
+  curso: "Educação de Jovens e Adultos - EJA",
+  inicio: "04/03/2025",
+  fim: "22/05/2025",
+},
+// SUZANE BARROS DE LIMA DIONÍZIO
+{
+  cpf: "73400718149",
+  registro: "2025001262",
+  matricula: "2025001262",
+  nome: "Suzane Barros de Lima Dionízio",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "03/12/2024",
+  fim: "05/02/2025",
+},
+
+// SUZANE BARROS DE LIMA DIONÍZIO
+{
+  cpf: "73400718149",
+  registro: "2025001261",
+  matricula: "2025001261",
+  nome: "Suzane Barros de Lima Dionízio",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "01/05/2025",
+  fim: "26/06/2025",
+},
+
+// SUZANE BARROS DE LIMA DIONÍZIO
+{
+  cpf: "73400718149",
+  registro: "2025001248",
+  matricula: "2025001248",
+  nome: "Suzane Barros de Lima Dionízio",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// GERCIANE DE ASSIS CHIQUETE
+{
+  cpf: "89436393172",
+  registro: "2025001261",
+  matricula: "2025001260",
+  nome: "Gerciane de Assis Chiquete",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "02/06/2025",
+  fim: "22/07/2025",
+},
+
+// ANA LUCIA MENDONÇA SANTOS
+{
+  cpf: "49368990387",
+  registro: "2025001273",
+  matricula: "2025001273",
+  nome: "Ana Lucia Mendonça Santos",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "20/12/2024",
+  fim: "27/02/2025",
+},
+
+// ANA LUCIA MENDONÇA SANTOS
+{
+  cpf: "49368990387",
+  registro: "2025001274",
+  matricula: "2025001274",
+  nome: "Ana Lucia Mendonça Santos",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "28/01/2025",
+  fim: "26/03/2025",
+},
+
+// ANA LUCIA MENDONÇA SANTOS
+{
+  cpf: "49368990387",
+  registro: "2025001275",
+  matricula: "2025001275",
+  nome: "Ana Lucia Mendonça Santos",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "06/01/2025",
+  fim: "03/03/2025",
+},
+
+// ANA LUCIA MENDONÇA SANTOS
+{
+  cpf: "49368990387",
+  registro: "2025001276",
+  matricula: "2025001276",
+  nome: "Ana Lucia Mendonça Santos",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "10/09/2024",
+  fim: "27/11/2024",
+},
+
+// ANA LUCIA MENDONÇA SANTOS
+{
+  cpf: "49368990387",
+  registro: "2025001277",
+  matricula: "2025001277",
+  nome: "Ana Lucia Mendonça Santos",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// ANA LUCIA MENDONÇA SANTOS
+{
+  cpf: "49368990387",
+  registro: "2025001278",
+  matricula: "2025001278",
+  nome: "Ana Lucia Mendonça Santos",
+  curso: "Transtornos Globais do Desenvolvimento - TGD",
+  inicio: "02/04/2025",
+  fim: "26/06/2025",
+},
+
+// FRANCISCA WALNEYDE DE CARVALHO SILVA
+{
+  cpf: "96682647387",
+  registro: "2025001272",
+  matricula: "2025001272",
+  nome: "Francisca Walneyde de Carvalho Silva",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// FRANCISCA WALNEYDE DE CARVALHO SILVA
+{
+  cpf: "96682647387",
+  registro: "2025001271",
+  matricula: "2025001271",
+  nome: "Francisca Walneyde de Carvalho Silva",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "03/04/2025",
+  fim: "27/05/2025",
+},
+
+// CARLA DE MELO BARBOSA
+{
+  cpf: "10099835711",
+  registro: "2025001282",
+  matricula: "2025001282",
+  nome: "Carla de Melo Barbosa",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "05/05/2025",
+  fim: "23/06/2025",
+},
+
+// LAFAIETE ANTONIO BONFIM
+{
+  cpf: "31419113801",
+  registro: "2025001281",
+  matricula: "2025001281",
+  nome: "Lafaiete Antonio Bonfim",
+  curso: "Educação de Jovens e Adultos - EJA Interventiva",
+  inicio: "02/04/2025",
+  fim: "26/06/2025",
+},
+
+// DEBORA BRENDA DE SOUZA
+{
+  cpf: "04727117177",
+  registro: "2025001283",
+  matricula: "2025001283",
+  nome: "Debora Brenda de Souza",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "05/05/2025",
+  fim: "23/06/2025",
+},
+
+// OSVALDO DOROTÊU DELMONDES
+{
+  cpf: "28383389191",
+  registro: "2025001285",
+  matricula: "2025001285",
+  nome: "Osvaldo Dorotêu Delmondes",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// OSVALDO DOROTÊU DELMONDES
+{
+  cpf: "28383389191",
+  registro: "2025001286",
+  matricula: "2025001286",
+  nome: "Osvaldo Dorotêu Delmondes",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// OSVALDO DOROTÊU DELMONDES
+{
+  cpf: "28383389191",
+  registro: "2025001287",
+  matricula: "2025001287",
+  nome: "Osvaldo Dorotêu Delmondes",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// REBECA DA SILVA VIEIRA
+{
+  cpf: "04470463140",
+  registro: "2025001289",
+  matricula: "2025001289",
+  nome: "Rebeca da Silva Vieira",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "02/04/2025",
+  fim: "26/06/2025",
+},
+
+// NEYVERSON DOS SANTOS SILVA
+{
+  cpf: "80655114149",
+  registro: "2025001291",
+  matricula: "2025001291",
+  nome: "Neyverson dos Santos Silva",
+  curso: "EJA Interventiva",
+  inicio: "06/01/2025",
+  fim: "03/03/2025",
+},
+
+// NEYVERSON DOS SANTOS SILVA
+{
+  cpf: "80655114149",
+  registro: "2025001292",
+  matricula: "2025001292",
+  nome: "Neyverson dos Santos Silva",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// NEYVERSON DOS SANTOS SILVA
+{
+  cpf: "80655114149",
+  registro: "2025001293",
+  matricula: "2025001293",
+  nome: "Neyverson dos Santos Silva",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// NEYVERSON DOS SANTOS SILVA
+{
+  cpf: "80655114149",
+  registro: "2025001294",
+  matricula: "2025001294",
+  nome: "Neyverson dos Santos Silva",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "02/04/2025",
+  fim: "26/06/2025",
+},
+// ELIANE SANTOS DA ROSA
+{
+  cpf: "49446215153",
+  registro: "2025001159",
+  matricula: "2025001159",
+  nome: "Eliane Santos da Rosa",
+  curso: "Deficiências Múltiplas - DMU",
+  inicio: "14/04/2025",
+  fim: "16/06/2025",
+},
+
+// ELIANE SANTOS DA ROSA
+{
+  cpf: "49446215153",
+  registro: "2025001160",
+  matricula: "2025001160",
+  nome: "Eliane Santos da Rosa",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "09/12/2024",
+  fim: "10/02/2025",
+},
+
+// ELIANE SANTOS DA ROSA
+{
+  cpf: "49446215153",
+  registro: "2025001280",
+  matricula: "2025001280",
+  nome: "Eliane Santos da Rosa",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// PATRICIA ALVES MOREIRA
+{
+  cpf: "03377638601",
+  registro: "2025001284",
+  matricula: "2025001284",
+  nome: "Patricia Alves Moreira",
+  curso: "Deficiências Múltiplas - DMU",
+  inicio: "14/04/2025",
+  fim: "16/06/2025",
+},
+
+// VANESSA BATISTA DA SILVA
+{
+  cpf: "72384107100",
+  registro: "2025001290",
+  matricula: "2025001290",
+  nome: "Vanessa Batista da Silva",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// HUDSON RODRIGO DA CRUZ MONTEIRO
+{
+  cpf: "03087942146",
+  registro: "2025001288",
+  matricula: "2025001288",
+  nome: "Hudson Rodrigo da Cruz Monteiro",
+  curso: "EJA Interventiva",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// CRISTIANO BATISTA FERREIRA
+{
+  cpf: "69032688120",
+  registro: "2025001303",
+  matricula: "2025001303",
+  nome: "Cristiano Batista Ferreira",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// CRISTIANO BATISTA FERREIRA
+{
+  cpf: "69032688120",
+  registro: "2025001304",
+  matricula: "2025001304",
+  nome: "Cristiano Batista Ferreira",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// MARIA JOSÉ LIMA DA SILVA
+{
+  cpf: "89133170100",
+  registro: "2025001295",
+  matricula: "2025001295",
+  nome: "Maria José Lima da Silva",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// MARIA JOSÉ LIMA DA SILVA
+{
+  cpf: "89133170100",
+  registro: "2025001296",
+  matricula: "2025001296",
+  nome: "Maria José Lima da Silva",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// MARIA JOSÉ LIMA DA SILVA
+{
+  cpf: "89133170100",
+  registro: "2025001297",
+  matricula: "2025001297",
+  nome: "Maria José Lima da Silva",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+// ROSÂNGELA BARRETO RODRIGUES REZENDE
+{
+  cpf: "40018539149",
+  registro: "2025001320",
+  matricula: "2025001320",
+  nome: "Rosângela Barreto Rodrigues Rezende",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// LAURENICE RIBEIRO DOS SANTOS
+{
+  cpf: "87609354191",
+  registro: "2025001319",
+  matricula: "2025001319",
+  nome: "Laurenice Ribeiro dos Santos",
+  curso: "EJA Interventiva",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// ELIENE MEDRADO DE OLIVEIRA RAMOS
+{
+  cpf: "01371047588",
+  registro: "2025001318",
+  matricula: "2025001318",
+  nome: "Eliene Medrado de Oliveira Ramos",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "28/05/2025",
+  fim: "21/07/2025",
+},
+
+// ELIENE MEDRADO DE OLIVEIRA RAMOS
+{
+  cpf: "01371047588",
+  registro: "2025001317",
+  matricula: "2025001317",
+  nome: "Eliene Medrado de Oliveira Ramos",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "14/03/2025",
+  fim: "12/05/2025",
+},
+
+// ELIENE MEDRADO DE OLIVEIRA RAMOS
+{
+  cpf: "01371047588",
+  registro: "2025001316",
+  matricula: "2025001316",
+  nome: "Eliene Medrado de Oliveira Ramos",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "06/01/2025",
+  fim: "03/03/2025",
+},
+
+// TAIANE DE JESUS SANTOS SOUSA
+{
+  cpf: "03642864155",
+  registro: "2025001311",
+  matricula: "2025001311",
+  nome: "Taiane de Jesus Santos Sousa",
+  curso: "EJA Interventiva",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// TAIANE DE JESUS SANTOS SOUSA
+{
+  cpf: "03642864155",
+  registro: "2025001310",
+  matricula: "2025001310",
+  nome: "Taiane de Jesus Santos Sousa",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// ANA CLÉBIA DE SOUSA COSTA
+{
+  cpf: "60607661100",
+  registro: "2025001302",
+  matricula: "2025001302",
+  nome: "Ana Clébia de Sousa Costa",
+  curso: "EJA Interventiva",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// TIAGO RODRIGUES DE OLIVEIRA
+{
+  cpf: "03012546138",
+  registro: "2025001315",
+  matricula: "2025001315",
+  nome: "Tiago Rodrigues de Oliveira",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// TIAGO RODRIGUES DE OLIVEIRA
+{
+  cpf: "03012546138",
+  registro: "2025001314",
+  matricula: "2025001314",
+  nome: "Tiago Rodrigues de Oliveira",
+  curso: "EJA Interventiva",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// VANDIRA SILVA SANTOS
+{
+  cpf: "24752339153",
+  registro: "2025001306",
+  matricula: "2025001306",
+  nome: "Vandira Silva Santos",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// VANDIRA SILVA SANTOS
+{
+  cpf: "24752339153",
+  registro: "2025001307",
+  matricula: "2025001307",
+  nome: "Vandira Silva Santos",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// VANDIRA SILVA SANTOS
+{
+  cpf: "24752339153",
+  registro: "2025001308",
+  matricula: "2025001308",
+  nome: "Vandira Silva Santos",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// KAMILLA LORRANE DA SILVA BORGES
+{
+  cpf: "04829579137",
+  registro: "2025001313",
+  matricula: "2025001313",
+  nome: "Kamilla Lorrane da Silva Borges",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// KAROLINE GONÇALVES ROCHA
+{
+  cpf: "05793845194",
+  registro: "2025001312",
+  matricula: "2025001312",
+  nome: "Karoline Gonçalves Rocha",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// ARYANE COELHO DE SENA
+{
+  cpf: "01583749160",
+  registro: "2025001308",
+  matricula: "2025001308",
+  nome: "Aryane Coelho de Sena",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// REBECCA MEDEIROS BASTOS MOREIRA
+{
+  cpf: "01011614170",
+  registro: "2025001309",
+  matricula: "2025001309",
+  nome: "Rebecca Medeiros Bastos Moreira",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// FABIANO DA SILVA GAMA
+{
+  cpf: "70061548120",
+  registro: "2025001097",
+  matricula: "2025001097",
+  nome: "Fabiano da Silva Gama",
+  curso: "EJA Interventiva",
+  inicio: "14/10/2024",
+  fim: "16/12/2024",
+},
+
+// FABIANO DA SILVA GAMA
+{
+  cpf: "70061548120",
+  registro: "2025001098",
+  matricula: "2025001098",
+  nome: "Fabiano da Silva Gama",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "02/08/2024",
+  fim: "02/10/2024",
+},
+
+// FABIANO DA SILVA GAMA
+{
+  cpf: "70061548120",
+  registro: "2025001336",
+  matricula: "2025001336",
+  nome: "Fabiano da Silva Gama",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "12/05/2025",
+  fim: "14/07/2025",
+},
+
+// FABIANO DA SILVA GAMA
+{
+  cpf: "70061548120",
+  registro: "2025001096",
+  matricula: "2025001096",
+  nome: "Fabiano da Silva Gama",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "02/01/2025",
+  fim: "03/03/2025",
+},
+
+// MARIA CRISTINA SANTOS
+{
+  cpf: "49049402100",
+  registro: "2025001335",
+  matricula: "2025001335",
+  nome: "Maria Cristina Santos",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "29/05/2025",
+  fim: "26/06/2025",
+},
+
+// MARIA CRISTINA SANTOS
+{
+  cpf: "49049402100",
+  registro: "2025001334",
+  matricula: "2025001334",
+  nome: "Maria Cristina Santos",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// MARIA CRISTINA SANTOS
+{
+  cpf: "49049402100",
+  registro: "2025001333",
+  matricula: "2025001333",
+  nome: "Maria Cristina Santos",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// WILLIAN SILVA MACHADO
+{
+  cpf: "86346830104",
+  registro: "20250053-1",
+  matricula: "20250053-1",
+  nome: "Willian Silva Machado",
+  curso: "Pós-Graduação Lato Sensu em Gestão Pública",
+  inicio: "07/06/2024",
+  fim: "02/06/2025",
+},
+// AXICLEI BEZERRA DE BRITO
+{
+  cpf: "72753218315",
+  registro: "2025001322",
+  matricula: "2025001322",
+  nome: "Axiclei Bezerra de Brito",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// CRISTIANE PEREIRA MACHADO
+{
+  cpf: "76861520144",
+  registro: "2025001323",
+  matricula: "2025001323",
+  nome: "Cristiane Pereira Machado",
+  curso: "Suporte Avançado de Vida",
+  inicio: "02/09/2024",
+  fim: "28/10/2024",
+},
+
+// CRISTIANE PEREIRA MACHADO
+{
+  cpf: "76861520144",
+  registro: "2025001324",
+  matricula: "2025001324",
+  nome: "Cristiane Pereira Machado",
+  curso: "Urgências e Emergências Neurológicas",
+  inicio: "01/07/2024",
+  fim: "29/08/2024",
+},
+
+// EGNA MESSIAS SILVA
+{
+  cpf: "80683649191",
+  registro: "2025001325",
+  matricula: "2025001325",
+  nome: "Egna Messias Silva",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// ANANÍZIA GONÇALVES VIANA
+{
+  cpf: "67378366234",
+  registro: "2025001329",
+  matricula: "2025001329",
+  nome: "Ananízia Gonçalves Viana",
+  curso: "EJA Interventiva",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// ANANÍZIA GONÇALVES VIANA
+{
+  cpf: "67378366234",
+  registro: "2025001330",
+  matricula: "2025001330",
+  nome: "Ananízia Gonçalves Viana",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// ANANÍZIA GONÇALVES VIANA
+{
+  cpf: "67378366234",
+  registro: "2025001331",
+  matricula: "2025001331",
+  nome: "Ananízia Gonçalves Viana",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// LAURENICE RIBEIRO DOS SANTOS
+{
+  cpf: "87609354191",
+  registro: "2025001319",
+  matricula: "2025001319",
+  nome: "Laurenice Ribeiro dos Santos",
+  curso: "EJA Interventiva",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// ROSÂNGELA BARRETO RODRIGUES REZENDE
+{
+  cpf: "40018539149",
+  registro: "2025001320",
+  matricula: "2025001320",
+  nome: "Rosângela Barreto Rodrigues Rezende",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// DELMA RODRIGUES SANTOS CHAVES
+{
+  cpf: "78312094172",
+  registro: "2025001328",
+  matricula: "2025001328",
+  nome: "Delma Rodrigues Santos Chaves",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+// APARECIDA DOS SANTOS ANDRADE
+{
+  cpf: "28606035149",
+  registro: "2025001321",
+  matricula: "2025001321",
+  nome: "Aparecida dos Santos Andrade",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// MIRIAM CINARA PEREIRA DE SOUZA
+{
+  cpf: "98712306134",
+  registro: "2025001332",
+  matricula: "2025001332",
+  nome: "Miriam Cinara Pereira de Souza",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// MILLENA ROSA KAISER
+{
+  cpf: "06555448105",
+  registro: "2025001337",
+  matricula: "2025001337",
+  nome: "Millena Rosa Kaiser",
+  curso: "EJA Interventiva",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// LETÍCIA RODRIGUES SILVA
+{
+  cpf: "03146193132",
+  registro: "2025001338",
+  matricula: "2025001338",
+  nome: "Letícia Rodrigues Silva",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// WELMIF AMPARO PEREIRA MARTINS
+{
+  cpf: "07658888150",
+  registro: "2025001339",
+  matricula: "2025001339",
+  nome: "Welmif Amparo Pereira Martins",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// ADALGISA APARECIDA PEREIRA DA SILVA
+{
+  cpf: "76849821172",
+  registro: "2025001344",
+  matricula: "2025001344",
+  nome: "Adalgisa Aparecida Pereira da Silva",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// ADALGISA APARECIDA PEREIRA DA SILVA
+{
+  cpf: "76849821172",
+  registro: "2025001345",
+  matricula: "2025001345",
+  nome: "Adalgisa Aparecida Pereira da Silva",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// LÉIA MARIA DE OLIVEIRA
+{
+  cpf: "22504818149",
+  registro: "2025001343",
+  matricula: "2025001343",
+  nome: "Léia Maria de Oliveira",
+  curso: "EJA Interventiva",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// EDNA OLIVEIRA DA CRUZ
+{
+  cpf: "72558695134",
+  registro: "2025001353",
+  matricula: "2025001353",
+  nome: "Edna Oliveira da Cruz",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// DIEGO MATIAS NASCIMENTO
+{
+  cpf: "06625660175",
+  registro: "2025001349",
+  matricula: "2025001349",
+  nome: "Diego Matias Nascimento",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// DIEGO MATIAS NASCIMENTO
+{
+  cpf: "06625660175",
+  registro: "2025001350",
+  matricula: "2025001350",
+  nome: "Diego Matias Nascimento",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// DIEGO MATIAS NASCIMENTO
+{
+  cpf: "06625660175",
+  registro: "2025001351",
+  matricula: "2025001351",
+  nome: "Diego Matias Nascimento",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+// ANTONIA SOLANGE GONÇALVES JORDÃO
+{
+  cpf: "62014110115",
+  registro: "2025001331",
+  matricula: "2025001331",
+  nome: "Antonia Solange Gonçalves Jordão",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// THAYNÁ OLIVEIRA FROTA DA ROCHA
+{
+  cpf: "02284229140",
+  registro: "2025001327",
+  matricula: "2025001327",
+  nome: "Thayná Oliveira Frota da Rocha",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "21/04/2025",
+  fim: "24/06/2025",
+},
+
+// FERNANDO JORGE RAMOS BARROS
+{
+  cpf: "23658282215",
+  registro: "2025001354",
+  matricula: "2025001354",
+  nome: "Fernando Jorge Ramos Barros",
+  curso: "EJA Interventiva",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// MIRIAM CINARA PEREIRA DE SOUZA
+{
+  cpf: "98712306134",
+  registro: "2025001332",
+  matricula: "2025001332",
+  nome: "Miriam Cinara Pereira de Souza",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// EVERSON RODRIGUES DA COSTA
+{
+  cpf: "72528974191",
+  registro: "2025001346",
+  matricula: "2025001346",
+  nome: "Everson Rodrigues da Costa",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// EVERSON RODRIGUES DA COSTA
+{
+  cpf: "72528974191",
+  registro: "2025001347",
+  matricula: "2025001347",
+  nome: "Everson Rodrigues da Costa",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// EVERSON RODRIGUES DA COSTA
+{
+  cpf: "72528974191",
+  registro: "2025001348",
+  matricula: "2025001348",
+  nome: "Everson Rodrigues da Costa",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// HENDERSON THALES SILVA TUBOITI
+{
+  cpf: "06590358125",
+  registro: "2025001340",
+  matricula: "2025001340",
+  nome: "Henderson Thales Silva Tuboiti",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// HENDERSON THALES SILVA TUBOITI
+{
+  cpf: "06590358125",
+  registro: "2025001341",
+  matricula: "2025001341",
+  nome: "Henderson Thales Silva Tuboiti",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// HENDERSON THALES SILVA TUBOITI
+{
+  cpf: "06590358125",
+  registro: "2025001342",
+  matricula: "2025001342",
+  nome: "Henderson Thales Silva Tuboiti",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// VANIA LUCIA MARCIANO DE JESUS
+{
+  cpf: "61947458191",
+  registro: "2025001355",
+  matricula: "2025001355",
+  nome: "Vania Lucia Marciano de Jesus",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// ANA REGINA DIAS FERREIRA
+{
+  cpf: "86741950168",
+  registro: "2025001357",
+  matricula: "2025001357",
+  nome: "Ana Regina Dias Ferreira",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// ANA REGINA DIAS FERREIRA
+{
+  cpf: "86741950168",
+  registro: "2025001358",
+  matricula: "2025001358",
+  nome: "Ana Regina Dias Ferreira",
+  curso: "Sala de Recursos Generalista",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// NAYARA FROTA CAETANO
+{
+  cpf: "73075426172",
+  registro: "2025001365",
+  matricula: "2025001365",
+  nome: "Nayara Frota Caetano",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// NAYARA FROTA CAETANO
+{
+  cpf: "73075426172",
+  registro: "2025001366",
+  matricula: "2025001366",
+  nome: "Nayara Frota Caetano",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// NAYARA FROTA CAETANO
+{
+  cpf: "73075426172",
+  registro: "2025001367",
+  matricula: "2025001367",
+  nome: "Nayara Frota Caetano",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// BENY GONZAGA ALMEIDA
+{
+  cpf: "70333491149",
+  registro: "2025001361",
+  matricula: "2025001361",
+  nome: "Beny Gonzaga Almeida",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// BENY GONZAGA ALMEIDA
+{
+  cpf: "70333491149",
+  registro: "2025001360",
+  matricula: "2025001360",
+  nome: "Beny Gonzaga Almeida",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// BENY GONZAGA ALMEIDA
+{
+  cpf: "70333491149",
+  registro: "2025001359",
+  matricula: "2025001359",
+  nome: "Beny Gonzaga Almeida",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// RONIA BORGES ARTIAGA
+{
+  cpf: "70631425187",
+  registro: "2025001362",
+  matricula: "2025001362",
+  nome: "Ronia Borges Artiaga",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "06/05/2025",
+  fim: "08/07/2025",
+},
+
+// RONIA BORGES ARTIAGA
+{
+  cpf: "70631425187",
+  registro: "2025001363",
+  matricula: "2025001363",
+  nome: "Ronia Borges Artiaga",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "24/02/2025",
+  fim: "24/04/2025",
+},
+
+// RONIA BORGES ARTIAGA
+{
+  cpf: "70631425187",
+  registro: "2025001364",
+  matricula: "2025001364",
+  nome: "Ronia Borges Artiaga",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "16/12/2024",
+  fim: "12/02/2025",
+},
+
+// MARIA VANDA GONÇALVES MENDES
+{
+  cpf: "00229811108",
+  registro: "2025001356",
+  matricula: "2025001356",
+  nome: "Maria Vanda Gonçalves Mendes",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// JESSYKA DIAS LOPES DE SOUZA
+{
+  cpf: "04202238192",
+  registro: "2025001352",
+  matricula: "2025001352",
+  nome: "Jessyka Dias Lopes de Souza",
+  curso: "EJA Interventiva",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// CHARLES PAULINO DA SILVA
+{
+  cpf: "01908841184",
+  registro: "2025001371",
+  matricula: "2025001371",
+  nome: "Charles Paulino da Silva",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "06/05/2025",
+  fim: "08/07/2025",
+},
+
+// CHARLES PAULINO DA SILVA
+{
+  cpf: "01908841184",
+  registro: "2025001372",
+  matricula: "2025001372",
+  nome: "Charles Paulino da Silva",
+  curso: "EJA Interventiva",
+  inicio: "24/02/2025",
+  fim: "24/04/2025",
+},
+
+// SILVIA MENDES SENA SANTOS
+{
+  cpf: "03628867177",
+  registro: "2025001373",
+  matricula: "2025001373",
+  nome: "Silvia Mendes Sena Santos",
+  curso: "EJA Interventiva",
+  inicio: "06/05/2025",
+  fim: "08/07/2025",
+},
+
+// SANDRA DA SILVA MATIAS
+{
+  cpf: "69596573187",
+  registro: "2025001368",
+  matricula: "2025001368",
+  nome: "Sandra da Silva Matias",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "20/02/2025",
+  fim: "24/04/2025",
+},
+
+// SANDRA DA SILVA MATIAS
+{
+  cpf: "69596573187",
+  registro: "2025001369",
+  matricula: "2025001369",
+  nome: "Sandra da Silva Matias",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// SANDRA DA SILVA MATIAS
+{
+  cpf: "69596573187",
+  registro: "2025001370",
+  matricula: "2025001370",
+  nome: "Sandra da Silva Matias",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// MARILZA BRITO DE FARIAS
+{
+  cpf: "00851242146",
+  registro: "2025001374",
+  matricula: "2025001374",
+  nome: "Marilza Brito de Farias",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// MARILZA BRITO DE FARIAS
+{
+  cpf: "00851242146",
+  registro: "2025001375",
+  matricula: "2025001375",
+  nome: "Marilza Brito de Farias",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "25/04/2025",
+  fim: "27/05/2025",
+},
+
+// MARILZA BRITO DE FARIAS
+{
+  cpf: "00851242146",
+  registro: "2025001376",
+  matricula: "2025001376",
+  nome: "Marilza Brito de Farias",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "24/02/2025",
+  fim: "24/04/2025",
+},
+// JÉSSICA MARQUES NOLETO DE ALENCAR
+{
+  cpf: "14782262779",
+  registro: "20250057-2",
+  matricula: "20250057-2",
+  nome: "Jéssica Marques Noleto de Alencar",
+  curso: "Pós-Graduação Lato Sensu em Educação Especial e Inclusiva",
+  inicio: "07/06/2024",
+  fim: "02/06/2025",
+},
+// IGOR FERREIRA DE SOUZA
+{
+  cpf: "01731996152",
+  registro: "202500058-1",
+  matricula: "202500058-1",
+  nome: "Igor Ferreira de Souza",
+  curso: "Superior de Complementação de Estudos em Gestão em Segurança Pública e Privada",
+  inicio: "13/02/2024",
+  fim: "20/12/2024",
+},
+
+// EMILLY SILVA DE SOUSA
+{
+  cpf: "04158568170",
+  registro: "2025001377",
+  matricula: "2025001377",
+  nome: "Emilly Silva de Sousa",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "06/05/2025",
+  fim: "08/07/2025",
+},
+
+// RENATA FROTA DA ROCHA
+{
+  cpf: "85756830120",
+  registro: "2025001380",
+  matricula: "2025001380",
+  nome: "Renata Frota da Rocha",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "18/02/2025",
+  fim: "22/04/2025",
+},
+
+// PRISCILA CARLA MENDES PEREIRA DE ALCÂNTARA
+{
+  cpf: "03137756138",
+  registro: "2025001378",
+  matricula: "2025001378",
+  nome: "Priscila Carla Mendes Pereira de Alcântara",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "05/05/2025",
+  fim: "21/07/2025",
+},
+
+// ALONSO DOS SANTOS SOARES
+{
+  cpf: "01831725150",
+  registro: "202500059-2",
+  matricula: "202500059-2",
+  nome: "Alonso dos Santos Soares",
+  curso: "Pós-Graduação Lato Sensu em Gestão Pública",
+  inicio: "07/06/2024",
+  fim: "02/06/2025",
+},
+// POLIANA GOMES COELHO
+{
+  cpf: "06154865686",
+  registro: "20250054-2",
+  matricula: "20250054-2",
+  nome: "Poliana Gomes Coelho",
+  curso: "Pós-Graduação Lato Sensu em Gestão de Projetos",
+  inicio: "15/05/2024",
+  fim: "18/12/2024",
+},
+
+// THIAGO LUCAS DE SOUZA ALVES
+{
+  cpf: "0737509108",
+  registro: "20240055-1",
+  matricula: "20240055-1",
+  nome: "Thiago Lucas de Souza Alves",
+  curso: "Pós-Graduação Lato Sensu em Inteligência Artificial e Tecnologia na Gestão Pública",
+  inicio: "12/02/2024",
+  fim: "18/12/2024",
+},
+
+// THIAGO LUCAS DE SOUZA ALVES
+{
+  cpf: "0737509108",
+  registro: "20240056-2",
+  matricula: "20240056-2",
+  nome: "Thiago Lucas de Souza Alves",
+  curso: "Pós-Graduação Lato Sensu em Segurança da Informação",
+  inicio: "12/02/2024",
+  fim: "18/12/2024",
+},
+// IRENE SOARES DE SOUZA CALAZÂNCIO
+{
+  cpf: "24916951115",
+  registro: "2025001381",
+  matricula: "2025001381",
+  nome: "Irene Soares de Souza Calazâncio",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "01/08/2025",
+  fim: "29/09/2025",
+},
+
+// ROSÂNGELA BARRETO RODRIGUES REZENDE
+{
+  cpf: "40018539149",
+  registro: "2025001320",
+  matricula: "2025001320",
+  nome: "Rosângela Barreto Rodrigues Rezende",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+// ANAGECIRA ALVES SANTOS
+{
+  cpf: "50995111472",
+  registro: "2025001382",
+  matricula: "2025001382",
+  nome: "Anagecira Alves Santos",
+  curso: "Cuidador de Idosos",
+  inicio: "15/09/2025",
+  fim: "15/10/2025",
+},
+
+// MARNEIDE CARDOSO GATO
+{
+  cpf: "62957198215",
+  registro: "202500060-1",
+  matricula: "202500060-1",
+  nome: "Marneide Cardoso Gato",
+  curso: "Pós-Graduação Lato Sensu em Terapia Ocupacional",
+  inicio: "15/06/2024",
+  fim: "21/07/2025",
+},
+// DANIEL NEPOMUCENO SILVA
+{
+  cpf: "03470295158",
+  registro: "202500066-1",
+  matricula: "202500066-1",
+  nome: "Daniel Nepomuceno Silva",
+  curso: "Pós-Graduação Lato Sensu em Auditoria, Controladoria e Finanças",
+  inicio: "24/10/2024",
+  fim: "24/10/2025",
+},
+
+// EVERÂNIA ALENCAR CARLOS
+{
+  cpf: "90980956153",
+  registro: "202500065-1",
+  matricula: "202500065-1",
+  nome: "Everânia Alencar Carlos",
+  curso: "Pós-Graduação Lato Sensu em Gestão Escolar (Administração, Coordenação, Orientação, Supervisão e Inspeção Escolar)",
+  inicio: "02/09/2024",
+  fim: "01/09/2025",
+},
+
+// TATIANA LINS BARRADAS
+{
+  cpf: "78067898120",
+  registro: "202500064-1",
+  matricula: "202500064-1",
+  nome: "Tatiana Lins Barradas",
+  curso: "Pós-Graduação Lato Sensu em Gestão Pública",
+  inicio: "21/10/2024",
+  fim: "24/10/2025",
+},
+// RELLTHON RUSSO KENND
+{
+  cpf: "68841124172",
+  registro: "202500063-1",
+  matricula: "202500063-1",
+  nome: "Rellthon Russo Kennd",
+  curso: "Pós-Graduação Lato Sensu em Docência para Educação Profissional e Tecnológica",
+  inicio: "15/06/2024",
+  fim: "21/04/2025",
+},
+
+// CLAUDOMIRO GOMES DE ALMEIDA
+{
+  cpf: "52521222372",
+  registro: "202500061-2",
+  matricula: "202500061-2",
+  nome: "Claudomiro Gomes de Almeida",
+  curso: "Pós-Graduação Lato Sensu em Docência para Educação Profissional e Tecnológica",
+  inicio: "15/06/2024",
+  fim: "21/04/2025",
+},
+
+// KARINA BARBOSA SOARES
+{
+  cpf: "12357093617",
+  registro: "202500062-1",
+  matricula: "202500062-1",
+  nome: "Karina Barbosa Soares",
+  curso: "Pós-Graduação Lato Sensu em Docência para Educação Profissional e Tecnológica",
+  inicio: "15/06/2024",
+  fim: "21/04/2025",
+},
+// MARIA DAS VITÓRIAS DE SOUZA
+{
+  cpf: "92598234120",
+  registro: "2025001389",
+  matricula: "2025001389",
+  nome: "Maria das Vitórias de Souza",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "10/02/2025",
+  fim: "10/03/2025",
+},
+
+// MARIA DAS VITÓRIAS DE SOUZA
+{
+  cpf: "92598234120",
+  registro: "2025001388",
+  matricula: "2025001388",
+  nome: "Maria das Vitórias de Souza",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "07/04/2025",
+  fim: "07/05/2025",
+},
+
+// MARIA DAS VITÓRIAS DE SOUZA
+{
+  cpf: "92598234120",
+  registro: "2025001387",
+  matricula: "2025001387",
+  nome: "Maria das Vitórias de Souza",
+  curso: "Atendimento Educacional Especializado para Pessoas com Surdez - Língua Brasileira de Sinais",
+  inicio: "19/05/2025",
+  fim: "19/06/2025",
+},
+
+// VALÉRIA DA COSTA VALENTE
+{
+  cpf: "94005087191",
+  registro: "2025001390",
+  matricula: "2025001390",
+  nome: "Valéria da Costa Valente",
+  curso: "Educação Infantil - Um Novo Olhar",
+  inicio: "02/03/2025",
+  fim: "29/05/2025",
+},
+
+// MARIA ELVIRA DE MEDEIROS
+{
+  cpf: "39991040153",
+  registro: "2025001394",
+  matricula: "2025001394",
+  nome: "Maria Elvira de Medeiros",
+  curso: "Educação Infantil - Um Novo Olhar",
+  inicio: "04/03/2025",
+  fim: "20/05/2025",
+},
+
+// DINARA RAQUEL TEIXEIRA ALVES
+{
+  cpf: "02652709100",
+  registro: "2025001399",
+  matricula: "2025001399",
+  nome: "Dinara Raquel Teixeira Alves",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "07/04/2025",
+  fim: "07/05/2025",
+},
+
+{
+  cpf: "02652709100",
+  registro: "2025001400",
+  matricula: "2025001400",
+  nome: "Dinara Raquel Teixeira Alves",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "20/06/2025",
+  fim: "18/08/2025",
+},
+
+{
+  cpf: "02652709100",
+  registro: "2025001395",
+  matricula: "2025001395",
+  nome: "Dinara Raquel Teixeira Alves",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "06/01/2025",
+  fim: "20/03/2025",
+},
+
+{
+  cpf: "02652709100",
+  registro: "2025001391",
+  matricula: "2025001391",
+  nome: "Dinara Raquel Teixeira Alves",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "25/10/2024",
+  fim: "26/12/2024",
+},
+
+// IRENE TRAJANO DA SILVA
+{
+  cpf: "49070240459",
+  registro: "2025001403",
+  matricula: "2025001403",
+  nome: "Irene Trajano da Silva",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "07/03/2025",
+  fim: "07/05/2025",
+},
+
+{
+  cpf: "49070240459",
+  registro: "2025001404",
+  matricula: "2025001404",
+  nome: "Irene Trajano da Silva",
+  curso: "Base Nacional Comum Curricular - BNCC",
+  inicio: "07/08/2024",
+  fim: "07/10/2024",
+},
+
+{
+  cpf: "49070240459",
+  registro: "2025001405",
+  matricula: "2025001405",
+  nome: "Irene Trajano da Silva",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "06/01/2025",
+  fim: "03/03/2025",
+},
+
+{
+  cpf: "49070240459",
+  registro: "2025001406",
+  matricula: "2025001406",
+  nome: "Irene Trajano da Silva",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "14/10/2024",
+  fim: "16/12/2024",
+},
+
+// MARIA VANDA GONÇALVES MENDES
+{
+  cpf: "00229811108",
+  registro: "2025001407",
+  matricula: "2025001407",
+  nome: "Maria Vanda Gonçalves Mendes",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "30/10/2024",
+  fim: "12/12/2024",
+},
+
+{
+  cpf: "00229811108",
+  registro: "2025001408",
+  matricula: "2025001408",
+  nome: "Maria Vanda Gonçalves Mendes",
+  curso: "Transtorno Global do Desenvolvimento - Um Novo Olhar",
+  inicio: "27/12/2024",
+  fim: "27/02/2025",
+},
+
+{
+  cpf: "00229811108",
+  registro: "2025001409",
+  matricula: "2025001409",
+  nome: "Maria Vanda Gonçalves Mendes",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "27/03/2025",
+  fim: "29/05/2025",
+},
+
+{
+  cpf: "00229811108",
+  registro: "2025001410",
+  matricula: "2025001410",
+  nome: "Maria Vanda Gonçalves Mendes",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "02/06/2025",
+  fim: "18/08/2025",
+},
+
+// SHIRLEY ADRIANE SOUZA BATISTA
+{
+  cpf: "53967240134",
+  registro: "2025001411",
+  matricula: "2025001411",
+  nome: "Shirley Adriane Souza Batista",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "30/10/2024",
+  fim: "12/12/2024",
+},
+
+{
+  cpf: "53967240134",
+  registro: "2025001412",
+  matricula: "2025001412",
+  nome: "Shirley Adriane Souza Batista",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "16/12/2024",
+  fim: "24/02/2025",
+},
+
+{
+  cpf: "53967240134",
+  registro: "2025001413",
+  matricula: "2025001413",
+  nome: "Shirley Adriane Souza Batista",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "27/03/2025",
+  fim: "29/05/2025",
+},
+
+{
+  cpf: "53967240134",
+  registro: "2025001414",
+  matricula: "2025001414",
+  nome: "Shirley Adriane Souza Batista",
+  curso: "Alfabetização na Educação Infantil e nos Anos Iniciais",
+  inicio: "02/06/2025",
+  fim: "18/08/2025",
+},
+
+// AMANDA CAROLINA MATOS FREIRE
+{
+  cpf: "04562040165",
+  registro: "2025001393",
+  matricula: "2025001393",
+  nome: "Amanda Carolina Matos Freire",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "17/04/2025",
+  fim: "22/05/2025",
+},
+
+// MARIJARA BRISA GOMES GUIMARAES
+{
+  cpf: "04267854106",
+  registro: "2025001401",
+  matricula: "2025001401",
+  nome: "Marijara Brisa Gomes Guimarães",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "25/03/2025",
+  fim: "28/05/2025",
+},
+
+{
+  cpf: "04267854106",
+  registro: "2025001402",
+  matricula: "2025001402",
+  nome: "Marijara Brisa Gomes Guimarães",
+  curso: "Deficiências Múltiplas - Um Passo para o Futuro",
+  inicio: "06/01/2025",
+  fim: "17/03/2025",
+},
+
+// RILZA SOARES COSTA MARINHO
+{
+  cpf: "15235190106",
+  registro: "2025001429",
+  matricula: "2025001429",
+  nome: "Rilza Soares Costa Marinho",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "10/02/2025",
+  fim: "14/03/2025",
+},
+
+{
+  cpf: "15235190106",
+  registro: "2025001430",
+  matricula: "2025001430",
+  nome: "Rilza Soares Costa Marinho",
+  curso: "Educação Inclusiva e Especial",
+  inicio: "13/05/2025",
+  fim: "13/06/2025",
+},
+
+{
+  cpf: "15235190106",
+  registro: "2025001431",
+  matricula: "2025001431",
+  nome: "Rilza Soares Costa Marinho",
+  curso: "Dislexia",
+  inicio: "08/07/2025",
+  fim: "15/08/2025",
+},
+
+{
+  cpf: "15235190106",
+  registro: "2025001432",
+  matricula: "2025001432",
+  nome: "Rilza Soares Costa Marinho",
+  curso: "A Psicopedagogia e o TDAH",
+  inicio: "10/09/2025",
+  fim: "17/10/2025",
+},
+
+// ANA MARIA PEREIRA DA SILVA COSTA
+{
+  cpf: "78877083115",
+  registro: "2025001443",
+  matricula: "2025001443",
+  nome: "Ana Maria Pereira da Silva Costa",
+  curso: "Defasagem de Aprendizagem",
+  inicio: "05/11/2024",
+  fim: "06/01/2025",
+},
+
+// LUCIANA LUZIA CARDOSO MENDES
+{
+  cpf: "01466590157",
+  registro: "2025001418",
+  matricula: "2025001418",
+  nome: "Luciana Luzia Cardoso Mendes",
+  curso: "Fundamentos da Alfabetização e Letramento",
+  inicio: "14/02/2025",
+  fim: "10/04/2025",
+},
+
+{
+  cpf: "01466590157",
+  registro: "2025001419",
+  matricula: "2025001419",
+  nome: "Luciana Luzia Cardoso Mendes",
+  curso: "Práticas Interdisciplinares nos Anos Iniciais e o Uso do Projeto",
+  inicio: "12/05/2025",
+  fim: "16/07/2025",
+},
+
+// MARIA DAS VITÓRIAS DE SOUZA
+{
+  cpf: "92598234120",
+  registro: "2025001417",
+  matricula: "2025001417",
+  nome: "Maria das Vitórias de Souza",
+  curso: "Educação Especial e os Diferentes Tipos de Necessidades Especiais",
+  inicio: "15/09/2025",
+  fim: "14/10/2025",
+},
+
+// CARLOS HENRIQUE DE SOUZA FERREIRA DA CRUZ
+{
+  cpf: "73412007153",
+  registro: "2025001438",
+  matricula: "2025001438",
+  nome: "Carlos Henrique de Souza Ferreira da Cruz",
+  curso: "Monitor Escolar",
+  inicio: "11/08/2025",
+  fim: "11/09/2025",
+},
+
+{
+  cpf: "73412007153",
+  registro: "2025001439",
+  matricula: "2025001439",
+  nome: "Carlos Henrique de Souza Ferreira da Cruz",
+  curso: "Secretário Escolar – Gerenciamento do Tempo",
+  inicio: "24/03/2025",
+  fim: "28/04/2025",
+},
+
+// IVANILDA SOARES SILVA DOS SANTOS
+{
+  cpf: "88861325149",
+  registro: "2025001386",
+  matricula: "2025001386",
+  nome: "Ivanilda Soares Silva dos Santos",
+  curso: "Manejo do Aleitamento Materno",
+  inicio: "10/02/2025",
+  fim: "10/03/2025",
+},
+
+// VANDA JESUS DA COSTA
+{
+  cpf: "01874894167",
+  registro: "2025001385",
+  matricula: "2025001385",
+  nome: "Vanda Jesus da Costa",
+  curso: "Manejo do Aleitamento Materno",
+  inicio: "10/02/2025",
+  fim: "10/03/2025",
+},
+
+// KELRIA ALVES GONZAGA MOREIRA
+{
+  cpf: "94798958115",
+  registro: "2025001446",
+  matricula: "2025001446",
+  nome: "Kelria Alves Gonzaga Moreira",
+  curso: "Deficiências Múltiplas",
+  inicio: "10/03/2025",
+  fim: "15/05/2025",
+},
+
+{
+  cpf: "94798958115",
+  registro: "2025001447",
+  matricula: "2025001447",
+  nome: "Kelria Alves Gonzaga Moreira",
+  curso: "Deficiência Intelectual - DI",
+  inicio: "10/06/2025",
+  fim: "18/08/2025",
+},
+
+{
+  cpf: "94798958115",
+  registro: "2025001448",
+  matricula: "2025001448",
+  nome: "Kelria Alves Gonzaga Moreira",
+  curso: "Altas Habilidades e Superdotação",
+  inicio: "10/09/2024",
+  fim: "27/11/2024",
+},
+
+{
+  cpf: "94798958115",
+  registro: "2025001449",
+  matricula: "2025001449",
+  nome: "Kelria Alves Gonzaga Moreira",
+  curso: "Jogos e Ludicidade na Educação",
+  inicio: "08/01/2025",
+  fim: "05/03/2025",
+},
+
+// MARIA DA GLÓRIA SILVA
+{
+  cpf: "85752355168",
+  registro: "2025001460",
+  matricula: "2025001460",
+  nome: "Maria da Glória Silva",
+  curso: "Deficiência Intelectual",
+  inicio: "12/05/2025",
+  fim: "20/06/2025",
+},
+
+{
+  cpf: "85752355168",
+  registro: "2025001461",
+  matricula: "2025001461",
+  nome: "Maria da Glória Silva",
+  curso: "Deficiências Múltiplas",
+  inicio: "08/07/2025",
+  fim: "15/08/2025",
+},
+
+{
+  cpf: "85752355168",
+  registro: "2025001462",
+  matricula: "2025001462",
+  nome: "Maria da Glória Silva",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "10/09/2025",
+  fim: "17/10/2025",
+},
+
+// ALDEMIR FERREIRA DA SILVA
+{
+  cpf: "03536010121",
+  registro: "2025001463",
+  matricula: "2025001463",
+  nome: "Aldemir Ferreira da Silva",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "04/11/2024",
+  fim: "06/01/2025",
+},
+
+// ANA PAULA ALVES MONTEIRO
+{
+  cpf: "00232073104",
+  registro: "2025001480",
+  matricula: "2025001480",
+  nome: "Ana Paula Alves Monteiro",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "04/11/2024",
+  fim: "06/01/2025",
+},
+
+{
+  cpf: "00232073104",
+  registro: "2025001457",
+  matricula: "2025001457",
+  nome: "Ana Paula Alves Monteiro",
+  curso: "Deficiência Auditiva e Surdez",
+  inicio: "08/01/2025",
+  fim: "03/03/2025",
+},
+
+{
+  cpf: "00232073104",
+  registro: "2025001459",
+  matricula: "2025001459",
+  nome: "Ana Paula Alves Monteiro",
+  curso: "Educação Precoce e o Desenvolvimento Infantil",
+  inicio: "14/05/2025",
+  fim: "24/07/2025",
+},
+
+// ELAINE REGINA DA SILVA SIMÕES
+{
+  cpf: "99835665168",
+  registro: "2025001477",
+  matricula: "2025001477",
+  nome: "Elaine Regina da Silva Simões",
+  curso: "Educação Especial e Inclusiva",
+  inicio: "24/02/2025",
+  fim: "24/03/2025",
+},
+
+{
+  cpf: "99835665168",
+  registro: "2025001476",
+  matricula: "2025001476",
+  nome: "Elaine Regina da Silva Simões",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "07/10/2024",
+  fim: "07/11/2024",
+},
+
+{
+  cpf: "99835665168",
+  registro: "2025001475",
+  matricula: "2025001475",
+  nome: "Elaine Regina da Silva Simões",
+  curso: "Transtorno do Espectro do Autismo (TEA) - Intervenções Precoces em Deficiências Comportamentais",
+  inicio: "10/06/2025",
+  fim: "10/07/2025",
+},
+
+// LETÍCIA ALVES ESPÍNDOLA
+{
+  cpf: "04353312138",
+  registro: "2025001474",
+  matricula: "2025001474",
+  nome: "Letícia Alves Espíndola",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "08/07/2025",
+  fim: "15/08/2025",
+},
+
+// VANESSA BATISTA DA SILVA
+{
+  cpf: "72384107100",
+  registro: "2025001481",
+  matricula: "2025001481",
+  nome: "Vanessa Batista da Silva",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "02/05/2025",
+  fim: "26/06/2025",
+},
+
+// MARIA DAS DORES GOMES AGUIAR
+{
+  cpf: "47753471104",
+  registro: "2025001472",
+  matricula: "2025001472",
+  nome: "Maria das Dores Gomes Aguiar",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "06/01/2025",
+  fim: "20/03/2025",
+},
+
+{
+  cpf: "47753471104",
+  registro: "2025001473",
+  matricula: "2025001473",
+  nome: "Maria das Dores Gomes Aguiar",
+  curso: "Deficiências Múltiplas",
+  inicio: "26/03/2025",
+  fim: "15/05/2025",
+},
+
+// SUELI TERESINHA COSTA
+{
+  cpf: "24460257904",
+  registro: "2025001479",
+  matricula: "2025001479",
+  nome: "Sueli Teresinha Costa",
+  curso: "Deficiências Múltiplas",
+  inicio: "11/09/2024",
+  fim: "11/10/2024",
+},
+
+// SUELI TERESINHA COSTA
+{
+  cpf: "24460257904",
+  registro: "2025001478",
+  matricula: "2025001478",
+  nome: "Sueli Teresinha Costa",
+  curso: "Alfabetização e Língua Portuguesa",
+  inicio: "07/04/2024",
+  fim: "09/05/2024",
+},
+
+// WANDA AIRES DE SOUSA VASCONCELOS COUTINHO
+{
+  cpf: "61461105315",
+  registro: "2025001470",
+  matricula: "2025001470",
+  nome: "Wanda Aires de Sousa Vasconcelos Coutinho",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "08/07/2025",
+  fim: "15/08/2025",
+},
+
+// WANDA AIRES DE SOUSA VASCONCELOS COUTINHO
+{
+  cpf: "61461105315",
+  registro: "2025001471",
+  matricula: "2025001471",
+  nome: "Wanda Aires de Sousa Vasconcelos Coutinho",
+  curso: "Atendimento Educacional Especializado - AEE",
+  inicio: "10/09/2025",
+  fim: "17/10/2025",
+},
+
+// WANDA AIRES DE SOUSA VASCONCELOS COUTINHO
+{
+  cpf: "61461105315",
+  registro: "2025001469",
+  matricula: "2025001469",
+  nome: "Wanda Aires de Sousa Vasconcelos Coutinho",
+  curso: "Monitor Escolar",
+  inicio: "12/05/2025",
+  fim: "20/06/2025",
+},
+
+// LEONARDO DE SOUZA BATISTA
+{
+  cpf: "87998262168",
+  registro: "2025001487",
+  matricula: "2025001487",
+  nome: "Leonardo de Souza Batista",
+  curso: "Educação de Jovens e Adultos",
+  inicio: "11/08/2025",
+  fim: "16/10/2025",
+},
+
+// MARIJARA BRISA GOMES GUIMARÃES
+{
+  cpf: "04267854106",
+  registro: "2025001483",
+  matricula: "2025001483",
+  nome: "Marijara Brisa Gomes Guimarães",
+  curso: "Educação Inclusiva e Especial",
+  inicio: "02/06/2025",
+  fim: "29/07/2025",
+},
+
+{
+  cpf: "04267854106",
+  registro: "2025001484",
+  matricula: "2025001484",
+  nome: "Marijara Brisa Gomes Guimarães",
+  curso: "Educação Física Adaptada e a Inclusão de Alunos PNEE",
+  inicio: "02/10/2024",
+  fim: "20/12/2024",
+},
+
+// MÉRCIA MARIA DE MELO
+{
+  cpf: "25886657134",
+  registro: "2025001485",
+  matricula: "2025001485",
+  nome: "Mercia Maria de Melo",
+  curso: "Jogos e Ludicidade na Educação",
+  inicio: "02/06/2025",
+  fim: "29/07/2025",
+},
+
+{
+  cpf: "25886657134",
+  registro: "2025001486",
+  matricula: "2025001486",
+  nome: "Mercia Maria de Melo",
+  curso: "A Educação Inclusiva e a Nova Escola",
+  inicio: "02/10/2024",
+  fim: "05/12/2024",
+},
+
+// ELIZAMAR GOMES DA SILVA SOUZA
+{
+  cpf: "51671913191",
+  registro: "2025001439",
+  matricula: "2025001439",
+  nome: "Elizamar Gomes da Silva Souza",
+  curso: "Transtorno do Espectro Autista - TEA",
+  inicio: "10/09/2025",
+  fim: "17/10/2025",
+},
+
+{
+  cpf: "51671913191",
+  registro: "2025001440",
+  matricula: "2025001440",
+  nome: "Elizamar Gomes da Silva Souza",
+  curso: "Educação em Direitos Humanos",
+  inicio: "08/07/2025",
+  fim: "15/08/2025",
+},
+
+ ];
+  // ----------------------------------------------------------------------------
+  // Função para remover pontuação do CPF
+  function normalizeCPF(cpf) {
+    return cpf.replace(/\D/g, ''); // Remove tudo que não é dígito
+  }
+
+  // Função para consultar o CPF e exibir no modal
+  function consultarCPF() {
+    const inputCPF = document.getElementById("cpf").value;
+    const normalizedInput = normalizeCPF(inputCPF);
+
+    if (!normalizedInput) {
+      alert("Por favor, insira um CPF válido.");
+      return;
+    }
+
+    // Filtra os registros que correspondem ao CPF informado
+    const resultados = mockData.filter(item => item.cpf === normalizedInput);
+
+    if (resultados.length === 0) {
+      alert("Não foram encontrados registros para este CPF.");
+      return;
+    }
+
+    // Monta as linhas da tabela
+    let tableRows = "";
+    resultados.forEach(item => {
+      tableRows += `
+        <tr>
+          <td>${item.registro}</td>
+          <td>${item.matricula}</td>
+          <td>${item.nome}</td>
+          <td>${item.curso}</td>
+          <td>${item.inicio}</td>
+          <td>${item.fim}</td>
+        </tr>
+      `;
+    });
+
+    // Insere as linhas na tabela do modal
+    document.getElementById("table-body").innerHTML = tableRows;
+
+    // Exibe o modal
+    const resultadoModal = new bootstrap.Modal(document.getElementById("resultadoModal"));
+    resultadoModal.show();
+  }
+</script></body>
+</html>

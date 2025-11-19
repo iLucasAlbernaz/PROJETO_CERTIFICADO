@@ -1,0 +1,33 @@
+# General
+.DS_Store
+Thumbs.db
+*.log
+*.lock
+*.tmp
+
+# Node / Bun / pnpm artifacts
+node_modules/
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+**/.env
+**/.env.local
+**/.env.*.local
+backend/.env
+frontend/.env
+
+# IDE / tooling
+.idea/
+.vscode/
+*.code-workspace
+
+# Prisma
+backend/prisma/dev.db
+backend/prisma/migrations/dev
