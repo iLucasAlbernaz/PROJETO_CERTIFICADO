@@ -1,4 +1,4 @@
-version: '3.9'
+version: '3.8'
 
 services:
   backend:
@@ -6,15 +6,13 @@ services:
       context: ./backend
     container_name: api_certificados
     restart: unless-stopped
-    # --- OBRIGATÓRIO: ISSO LIBERA O ACESSO ---
     ports:
       - "4000:4000"
-    # -----------------------------------------
     environment:
       DATABASE_URL: ${DATABASE_URL}
       PORT: 4000
       JWT_SECRET: ${JWT_SECRET}
-      # IMPORTANTE: Coloque o seu IP aqui
+      # IP do servidor para conexão direta
       FRONTEND_URL: http://172.235.134.189:5173
     networks:
       - certificados-net
@@ -29,9 +27,9 @@ services:
   frontend:
     build:
       context: ./frontend
+      # CORREÇÃO AQUI: Usando formato de lista (-) para evitar erros de sintaxe
       args:
-        # IMPORTANTE: O site precisa saber onde buscar os dados
-        VITE_API_BASE_URL: http://172.235.134.189:4000/api
+        - VITE_API_BASE_URL=http://172.235.134.189:4000/api
     container_name: web_certificados
     depends_on:
       - backend
