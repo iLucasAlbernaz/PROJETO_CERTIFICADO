@@ -27,7 +27,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      # CORREÇÃO AQUI: Usando formato de lista (-) para evitar erros de sintaxe
+      # Formato de lista para evitar erros de sintaxe
       args:
         - VITE_API_BASE_URL=http://172.235.134.189:4000/api
     container_name: web_certificados
@@ -48,6 +48,6 @@ services:
 networks:
   certificados-net:
     driver: bridge
+  # CORREÇÃO AQUI: Removemos "external: true" para que o Docker crie a rede se ela não existir
   traefik_public:
-    external: true
-    name: traefik_public
+    driver: bridge
