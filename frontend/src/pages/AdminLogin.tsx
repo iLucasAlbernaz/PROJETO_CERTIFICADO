@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Card, Container, Form } from 'react-bootstrap';
+import { Button, Card, Form } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
@@ -42,16 +42,16 @@ export const AdminLogin = () => {
   };
 
   return (
-    <Container className="py-5" style={{ maxWidth: 420 }}>
-      <Card className="shadow border-0">
-        <Card.Body className="p-4">
-          <div className="text-center mb-4">
-            <p className="text-danger text-uppercase fw-semibold mb-1">Painel Administrativo</p>
-            <h1 className="h4">Acessar painel</h1>
-            <p className="text-muted mb-0">Use suas credenciais para gerenciar certificados.</p>
+    <div className="login-shell">
+      <Card className="login-card">
+        <Card.Body>
+          <div className="login-header">
+            <p className="text-uppercase text-danger fw-semibold mb-1">Painel administrativo</p>
+            <h1 className="login-title">Acessar painel</h1>
+            <p className="login-subtitle">Use suas credenciais para gerenciar os certificados da Faculdade Guerra.</p>
           </div>
-          <Form onSubmit={handleSubmit(onSubmit)} className="d-grid gap-3">
-            <div>
+          <Form onSubmit={handleSubmit(onSubmit)} className="login-form">
+            <div className="login-field">
               <Form.Label>E-mail</Form.Label>
               <Form.Control
                 type="email"
@@ -61,23 +61,23 @@ export const AdminLogin = () => {
               />
               <Form.Control.Feedback type="invalid">{errors.email?.message}</Form.Control.Feedback>
             </div>
-            <div>
+            <div className="login-field">
               <Form.Label>Senha</Form.Label>
               <Form.Control
                 type="password"
-                placeholder="******"
+                placeholder="•••••••"
                 autoComplete="current-password"
                 {...register('password')}
                 isInvalid={!!errors.password}
               />
               <Form.Control.Feedback type="invalid">{errors.password?.message}</Form.Control.Feedback>
             </div>
-            <Button type="submit" className="mt-2" variant="danger" disabled={isLoading}>
+            <Button type="submit" className="primary-action w-100" disabled={isLoading}>
               {isLoading ? 'Entrando...' : 'Entrar'}
             </Button>
           </Form>
         </Card.Body>
       </Card>
-    </Container>
+    </div>
   );
 };

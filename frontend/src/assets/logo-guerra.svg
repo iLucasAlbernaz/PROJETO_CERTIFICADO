@@ -1,0 +1,9 @@
+<svg width="512" height="120" viewBox="0 0 512 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g fill="#e63946">
+    <path d="M30 15c-3.3 0-6 2.7-6 6v66c0 3.3 2.7 6 6 6h24l18 12 18-12h24c3.3 0 6-2.7 6-6V21c0-3.3-2.7-6-6-6H30zm6 12h72v54H93l-21 14-21-14H36V27z"/>
+    <path d="M129 15h20l32 68 32-68h20l-44 90h-16L129 15z"/>
+    <path d="M242 29c11.9 0 21 9.7 21 21v38h-18V52c0-4.4-3.6-8-8-8s-8 3.6-8 8v36h-18V13h18v32c3.4-10.1 10.6-16 21-16z"/>
+  </g>
+  <text x="290" y="72" font-family="Poppins, Arial" font-weight="700" font-size="48" fill="#e63946">Guerra</text>
+  <text x="296" y="96" font-family="Poppins, Arial" font-size="18" fill="#4c4c4c">Faculdade · Juntos somos mais fortes</text>
+</svg>

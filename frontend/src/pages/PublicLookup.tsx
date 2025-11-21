@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Card, Container, Form, Modal, Table } from 'react-bootstrap';
+import { Button, Card, CloseButton, Container, Form, Modal, Spinner } from 'react-bootstrap';
+import { FiType, FiSearch, FiAward, FiShield } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { api } from '../services/api';
 import type { Certificate } from '../types';
@@ -45,120 +46,142 @@ export const PublicLookup = () => {
     }
   };
 
+  const steps = [
+    {
+      title: 'Informe o CPF',
+      description: 'Digite o CPF do aluno e inicie a busca instantânea.',
+      icon: <FiType size={28} />
+    },
+    {
+      title: 'Confira os dados',
+      description: 'Veja registro, curso e período diretamente no resultado.',
+      icon: <FiSearch size={28} />
+    },
+    {
+      title: 'Valide o certificado',
+      description: 'Use a credencial digital para confirmar a autenticidade.',
+      icon: <FiAward size={28} />
+    }
+  ];
+
   return (
     <>
-      <section className="hero-section text-center py-5">
-        <Container>
-          <p className="fs-5 text-danger mb-1">Portal de Consulta</p>
-          <h1 className="fw-bold mb-3">Validador de Certificados</h1>
-          <p className="text-muted mb-0">
-            Consulte rapidamente a autenticidade de certificados emitidos pela instituição.
-          </p>
-        </Container>
-      </section>
-
-      <Container className="py-4">
-        <Card className="shadow border-0">
-          <Card.Body>
-            <Card.Title className="mb-4">Pesquisar por CPF</Card.Title>
-            <Form onSubmit={handleSubmit(onSubmit)} className="row g-3">
-              <div className="col-md-8">
-                <Form.Label>CPF</Form.Label>
-                <Controller
-                  control={control}
-                  name="cpf"
-                  render={({ field }) => (
-                    <Form.Control
-                      {...field}
-                      type="text"
-                      placeholder="000.000.000-00"
-                      value={field.value ?? ''}
-                      onChange={(event) => field.onChange(maskCPF(event.target.value))}
-                      isInvalid={!!errors.cpf}
-                    />
-                  )}
-                />
+      <section className="hero-clean">
+        <Container className="hero-inner">
+          <div className="hero-text">
+            <p className="eyebrow">Portal de consulta</p>
+            <h1>Validador de Certificados</h1>
+            <span className="underline" />
+            <p className="lead">
+              Confira em segundos se um certificado foi emitido oficialmente pela Faculdade Guerra.
+            </p>
+          </div>
+          <Card className="hero-card">
+            <Card.Body>
+              <Form onSubmit={handleSubmit(onSubmit)}>
+                <Form.Label className="mb-2">Digite o CPF</Form.Label>
+                <div className="search-bar">
+                  <Controller
+                    control={control}
+                    name="cpf"
+                    render={({ field }) => (
+                      <Form.Control
+                        {...field}
+                        type="text"
+                        placeholder="000.000.000-00"
+                        value={field.value ?? ''}
+                        onChange={(event) => field.onChange(maskCPF(event.target.value))}
+                        isInvalid={!!errors.cpf}
+                      />
+                    )}
+                  />
+                  <Button type="submit" className="search-button" disabled={isLoading}>
+                    {isLoading ? <Spinner animation="border" size="sm" /> : 'Consultar'}
+                  </Button>
+                </div>
                 <Form.Control.Feedback type="invalid" className="d-block">
                   {errors.cpf?.message}
                 </Form.Control.Feedback>
-              </div>
-              <div className="col-md-4 d-flex align-items-end">
-                <Button type="submit" variant="danger" className="w-100" disabled={isLoading}>
-                  {isLoading ? 'Consultando...' : 'Consultar'}
-                </Button>
-              </div>
-            </Form>
-          </Card.Body>
-        </Card>
+              </Form>
+            </Card.Body>
+          </Card>
+        </Container>
+      </section>
 
-        <section className="mt-5">
-          <h2 className="h5 text-muted text-uppercase">Como funciona?</h2>
-          <div className="row g-4 mt-1">
-            <div className="col-md-4">
-              <Card className="info-card">
+      <section className="how-it-works">
+        <Container>
+          <div className="steps-grid">
+            {steps.map((step) => (
+              <Card key={step.title} className="step-card">
                 <Card.Body>
-                  <h3>1. Informe o CPF</h3>
-                  <p>Digite o CPF de quem deseja validar para localizar todos os certificados emitidos.</p>
+                  <div className="step-icon">{step.icon}</div>
+                  <h3>{step.title}</h3>
+                  <p>{step.description}</p>
                 </Card.Body>
               </Card>
-            </div>
-            <div className="col-md-4">
-              <Card className="info-card">
-                <Card.Body>
-                  <h3>2. Confira os dados</h3>
-                  <p>
-                    Os resultados exibem número de registro, matrícula, curso e datas de início e conclusão.
-                  </p>
-                </Card.Body>
-              </Card>
-            </div>
-            <div className="col-md-4">
-              <Card className="info-card">
-                <Card.Body>
-                  <h3>3. Valide o certificado</h3>
-                  <p>Utilize as informações apresentadas para confirmar a autenticidade junto à instituição.</p>
-                </Card.Body>
-              </Card>
-            </div>
+            ))}
           </div>
-        </section>
-      </Container>
+        </Container>
+      </section>
 
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Resultado da consulta</Modal.Title>
+      <footer className="site-footer">
+        <p>© {new Date().getFullYear()} Faculdade Guerra. Todos os direitos reservados.</p>
+        <a href="/admin/login">Acesso administrativo</a>
+      </footer>
+
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered className="credential-modal">
+        <Modal.Header>
+          <div>
+            <p className="text-uppercase text-muted small mb-1">Resultado da consulta</p>
+            <h5 className="mb-0">Credenciais encontradas</h5>
+          </div>
+          <CloseButton onClick={() => setShowModal(false)} />
         </Modal.Header>
         <Modal.Body>
-          <Table striped responsive className="align-middle">
-            <thead>
-              <tr>
-                <th>Registro</th>
-                <th>Matrícula</th>
-                <th>Nome</th>
-                <th>Curso</th>
-                <th>Início</th>
-                <th>Término</th>
-              </tr>
-            </thead>
-            <tbody>
-              {certificates.map((item) => (
-                <tr key={item.id ?? `${item.cpf}-${item.registro}`}>
-                  <td>{item.registro}</td>
-                  <td>{item.matricula}</td>
-                  <td>{item.nome}</td>
-                  <td>{item.curso}</td>
-                  <td>{formatDate(item.inicio)}</td>
-                  <td>{formatDate(item.fim)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+          <div className="credential-stack">
+            {certificates.map((item) => (
+              <div key={item.id ?? `${item.cpf}-${item.registro}`} className="credential-card animate">
+                <div className="credential-status">✅ Certificado válido</div>
+                <div className="credential-header">
+                  <div>
+                    <span className="label">Curso</span>
+                    <h4>{item.curso}</h4>
+                  </div>
+                  <div className="seal">
+                    <FiShield size={24} />
+                    <span>Autenticado</span>
+                  </div>
+                </div>
+                <div className="credential-grid">
+                  <div>
+                    <span className="label">Aluno</span>
+                    <p>{item.nome}</p>
+                  </div>
+                  <div>
+                    <span className="label">CPF</span>
+                    <p>{item.cpf}</p>
+                  </div>
+                  <div>
+                    <span className="label">Início</span>
+                    <p>{formatDate(item.inicio)}</p>
+                  </div>
+                  <div>
+                    <span className="label">Término</span>
+                    <p>{formatDate(item.fim)}</p>
+                  </div>
+                  <div>
+                    <span className="label">Registro</span>
+                    <p>{item.registro}</p>
+                  </div>
+                  <div>
+                    <span className="label">Matrícula</span>
+                    <p>{item.matricula}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
-            Fechar
-          </Button>
-        </Modal.Footer>
       </Modal>
     </>
   );

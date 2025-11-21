@@ -1,0 +1,14 @@
+.app-header {
+  width: 100%;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid #f1f3f5;
+}
+
+.logo-slot {
+  width: min(260px, 60vw);
+  height: auto;
+  object-fit: contain;
+}
