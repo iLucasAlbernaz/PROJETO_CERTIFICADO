@@ -6,29 +6,50 @@ services:
       context: ./backend
     container_name: api_certificados
     restart: unless-stopped
+    # --- OBRIGATÓRIO: ISSO LIBERA O ACESSO ---
+    ports:
+      - "4000:4000"
+    # -----------------------------------------
     environment:
-      # Agora pegamos a URL completa direto do Portainer
       DATABASE_URL: ${DATABASE_URL}
       PORT: 4000
       JWT_SECRET: ${JWT_SECRET}
-      FRONTEND_URL: ${FRONTEND_URL}
-    ports:
-      - "4000:4000"
+      # IMPORTANTE: Coloque o seu IP aqui
+      FRONTEND_URL: http://172.235.134.189:5173
     networks:
       - certificados-net
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api-certificados.rule=Host(`api-certificados.faculdadeguerra.edu.br`)"
+      - "traefik.http.routers.api-certificados.entrypoints=websecure"
+      - "traefik.http.routers.api-certificados.tls.certresolver=myresolver"
+      - "traefik.http.services.api-certificados.loadbalancer.server.port=4000"
 
   frontend:
     build:
       context: ./frontend
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+        # IMPORTANTE: O site precisa saber onde buscar os dados
+        VITE_API_BASE_URL: http://172.235.134.189:4000/api
     container_name: web_certificados
     depends_on:
       - backend
-    ports:
-      - "5173:80"
     networks:
       - certificados-net
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web-certificados.rule=Host(`certificados.faculdadeguerra.edu.br`)"
+      - "traefik.http.routers.web-certificados.entrypoints=websecure"
+      - "traefik.http.routers.web-certificados.tls.certresolver=myresolver"
+      - "traefik.http.services.web-certificados.loadbalancer.server.port=80"
+    ports:
+      - "5173:80"
 
 networks:
   certificados-net:
+    driver: bridge
+  traefik_public:
+    external: true
+    name: traefik_public
