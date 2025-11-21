@@ -1,25 +1,17 @@
 version: '3.9'
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: certificados
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - certificados-net
-
   backend:
     build:
       context: ./backend
-    env_file:
-      - ./backend/.env.docker
-    depends_on:
-      - postgres
+    container_name: api_certificados
+    restart: unless-stopped
+    environment:
+      # Agora pegamos a URL completa direto do Portainer
+      DATABASE_URL: ${DATABASE_URL}
+      PORT: 4000
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
     ports:
       - "4000:4000"
     networks:
@@ -28,17 +20,15 @@ services:
   frontend:
     build:
       context: ./frontend
-    environment:
-      - VITE_API_BASE_URL=http://localhost:4000/api
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+    container_name: web_certificados
     depends_on:
       - backend
     ports:
       - "5173:80"
     networks:
       - certificados-net
-
-volumes:
-  pgdata:
 
 networks:
   certificados-net:
