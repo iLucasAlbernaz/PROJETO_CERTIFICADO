@@ -84,9 +84,51 @@ docs/      # OpenAPI/Swagger
 
 ## Deploy
 
-- Backend pode ser hospedado em qualquer serviço Node (PM2, Docker, etc.) com acesso ao banco Postgres.
-- Frontend pode ser publicado em Vercel, Netlify ou bucket estático apontando para a API.
-- Ajuste `FRONTEND_URL` no backend e `VITE_API_BASE_URL` no frontend conforme o ambiente de produção.
+### Docker Compose (local ou host único)
+
+1. Copie `backend/.env.docker.example` para `backend/.env.docker` e ajuste as variáveis (especialmente `DATABASE_URL`, `FRONTEND_URL` e credenciais).
+2. Se quiser usar o Postgres embarcado do `docker-compose`, deixe o `DATABASE_URL` igual ao exemplo (`postgres://postgres:postgres@postgres...`).
+3. Suba os containers:
+   ```bash
+   docker compose up --build
+   ```
+4. Serviços publicados:
+   - Backend: http://localhost:4000/api
+   - Swagger: http://localhost:4000/docs
+   - Frontend: http://localhost:5173
+
+### Imagens Docker
+
+- `backend/Dockerfile`: multi-stage (build de TypeScript + runtime). Usa `docker-entrypoint.sh` para aplicar `prisma migrate deploy` antes de iniciar.
+- `frontend/Dockerfile`: build Vite e serve com Nginx (`frontend/nginx.conf`).
+- Ambos os diretórios possuem `.dockerignore` para builds mais leves.
+
+Para gerar as imagens:
+```bash
+# backend
+docker build -t guerra/certificados-backend ./backend
+# frontend
+docker build -t guerra/certificados-frontend ./frontend
+```
+
+### Kubernetes (cluster)
+
+Arquivos em `k8s/`:
+
+- `backend-deployment.yaml` / `frontend-deployment.yaml` — Deployments + Services.
+- `backend-secret.example.yaml` — modelo de Secret para as variáveis da API (copie, renomeie e aplique via `kubectl apply -f` após substituir os valores).
+
+Passos gerais:
+1. Publique as imagens em um registry (`docker push ...`).
+2. Atualize `<BACKEND_IMAGE_TAG>` e `<FRONTEND_IMAGE_TAG>` nos manifests.
+3. Aplique o Secret com suas variáveis reais.
+4. `kubectl apply -f k8s/backend-deployment.yaml` e `kubectl apply -f k8s/frontend-deployment.yaml`.
+5. Exponha os serviços via ingress/LoadBalancer conforme seu cluster.
+
+### Considerações
+
+- Ajuste `FRONTEND_URL` no backend e `VITE_API_BASE_URL` no frontend conforme o host final (domínios, HTTPS).
+- Para ambientes produtivos, automatize `prisma migrate deploy` (já presente no entrypoint do container).
 
 ## Importante
 
@@ -95,5 +137,3 @@ docs/      # OpenAPI/Swagger
 - Caso o banco já esteja com dados (ambiente produtivo), use `prisma migrate resolve --applied <migration>` para marcar migrations existentes, ou gere diffs usando `prisma migrate diff`.
 
 Pronto! Basta inicializar um repositório (`git init`), adicionar os arquivos e fazer o push para o GitHub.
-
-Atualização de configuração
