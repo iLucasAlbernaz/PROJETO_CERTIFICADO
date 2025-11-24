@@ -7,14 +7,9 @@ services:
     container_name: api_certificados
     restart: unless-stopped
     environment:
-      # --- AQUI ESTÁ A CONEXÃO CERTA (Copiada do seu .env) ---
-      # Usamos aspas para garantir que os caracteres especiais não quebrem
-      DATABASE_URL: "postgresql://fagsu:HMG_KA%23ueImgg%21LsLaH4%21%21@172.235.134.189:5432/fagsu?schema=public"
-      
+      DATABASE_URL: "postgresql://fagsu:HMG_KA%23ueImgg%21LsLaH4%21%21@172.17.0.1:5432/fagsu?schema=public"
       PORT: 4000
       JWT_SECRET: "troque-este-segredo"
-      
-      # Mantemos '*' ou o domínio HTTPS para não bloquear o acesso do site
       FRONTEND_URL: "*"
     networks:
       - certificados-net
@@ -32,7 +27,8 @@ services:
     build:
       context: ./frontend
       args:
-        - VITE_API_BASE_URL=https://api-certificados.faculdadeguerra.edu.br
+        # --- CORREÇÃO AQUI: Adicionado /api no final ---
+        - VITE_API_BASE_URL=https://api-certificados.faculdadeguerra.edu.br/api
     container_name: web_certificados
     depends_on:
       - backend
