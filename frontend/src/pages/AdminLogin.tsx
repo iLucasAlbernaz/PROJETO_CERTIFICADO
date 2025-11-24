@@ -55,7 +55,7 @@ export const AdminLogin = () => {
               <Form.Label>E-mail</Form.Label>
               <Form.Control
                 type="email"
-                placeholder="admin@certificados.com"
+                placeholder="E-mail"
                 {...register('email')}
                 isInvalid={!!errors.email}
               />

@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
 import { FiEdit2, FiTrash2, FiSearch } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import type { Certificate, CertificatePayload } from '../types';
 import { formatDate, maskCPF, onlyDigits } from '../utils/format';
@@ -170,6 +171,9 @@ export const AdminDashboard = () => {
               <p className="text-uppercase text-danger fw-semibold mb-1">Painel administrativo</p>
               <h2 className="panel-title">{isEditing ? 'Editar certificado' : 'Cadastrar novo certificado'}</h2>
               <p className="panel-subtitle">Preencha os dados para registrar ou atualizar um certificado.</p>
+              <Link to="/" className="back-link">
+                ← Voltar para consulta pública
+              </Link>
             </div>
             <Form className="form-grid" onSubmit={handleSubmit(onSubmit)}>
               <div className="grid-full">
