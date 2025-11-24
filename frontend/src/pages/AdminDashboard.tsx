@@ -89,6 +89,9 @@ export const AdminDashboard = () => {
     fetchCertificates();
   }, []);
 
+  const toUTCDateISOString = (value: string) => new Date(`${value}T00:00:00Z`).toISOString();
+  const fromISOStringToDateInput = (value: string) => value.split('T')[0];
+
   useEffect(() => {
     if (isEditing && selectedCertificate) {
       reset({
@@ -97,8 +100,8 @@ export const AdminDashboard = () => {
         matricula: selectedCertificate.matricula,
         nome: selectedCertificate.nome,
         curso: selectedCertificate.curso,
-        inicio: new Date(selectedCertificate.inicio).toISOString().slice(0, 10),
-        fim: new Date(selectedCertificate.fim).toISOString().slice(0, 10)
+        inicio: fromISOStringToDateInput(selectedCertificate.inicio),
+        fim: fromISOStringToDateInput(selectedCertificate.fim)
       });
     } else {
       reset(defaultFormValues);
@@ -109,8 +112,8 @@ export const AdminDashboard = () => {
     const payload: CertificatePayload = {
       ...values,
       cpf: onlyDigits(values.cpf),
-      inicio: new Date(values.inicio).toISOString(),
-      fim: new Date(values.fim).toISOString()
+      inicio: toUTCDateISOString(values.inicio),
+      fim: toUTCDateISOString(values.fim)
     };
 
     try {
