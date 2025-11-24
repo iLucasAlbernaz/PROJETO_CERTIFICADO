@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 
 services:
   backend:
@@ -6,48 +6,46 @@ services:
       context: ./backend
     container_name: api_certificados
     restart: unless-stopped
-    ports:
-      - "4000:4000"
     environment:
       DATABASE_URL: ${DATABASE_URL}
       PORT: 4000
       JWT_SECRET: ${JWT_SECRET}
-      # IP do servidor para conexão direta
-      FRONTEND_URL: http://172.235.134.189:5173
+      FRONTEND_URL: https://certificados.faculdadeguerra.edu.br
     networks:
       - certificados-net
-      - traefik_public
+      - fag_network
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=fag_network"
       - "traefik.http.routers.api-certificados.rule=Host(`api-certificados.faculdadeguerra.edu.br`)"
       - "traefik.http.routers.api-certificados.entrypoints=websecure"
-      - "traefik.http.routers.api-certificados.tls.certresolver=myresolver"
+      - "traefik.http.routers.api-certificados.tls=true"
+      - "traefik.http.routers.api-certificados.tls.certresolver=lets-encrypt"
       - "traefik.http.services.api-certificados.loadbalancer.server.port=4000"
 
   frontend:
     build:
       context: ./frontend
-      # Formato de lista para evitar erros de sintaxe
       args:
-        - VITE_API_BASE_URL=http://172.235.134.189:4000/api
+        - VITE_API_BASE_URL=https://api-certificados.faculdadeguerra.edu.br
     container_name: web_certificados
     depends_on:
       - backend
     networks:
       - certificados-net
-      - traefik_public
+      - fag_network
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=fag_network"
       - "traefik.http.routers.web-certificados.rule=Host(`certificados.faculdadeguerra.edu.br`)"
       - "traefik.http.routers.web-certificados.entrypoints=websecure"
-      - "traefik.http.routers.web-certificados.tls.certresolver=myresolver"
+      - "traefik.http.routers.web-certificados.tls=true"
+      - "traefik.http.routers.web-certificados.tls.certresolver=lets-encrypt"
       - "traefik.http.services.web-certificados.loadbalancer.server.port=80"
-    ports:
-      - "5173:80"
 
 networks:
   certificados-net:
     driver: bridge
-  # CORREÇÃO AQUI: Removemos "external: true" para que o Docker crie a rede se ela não existir
-  traefik_public:
-    driver: bridge
+
+  fag_network:
+    external: true
