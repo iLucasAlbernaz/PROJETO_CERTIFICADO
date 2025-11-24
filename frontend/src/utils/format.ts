@@ -10,5 +10,5 @@ export const maskCPF = (value: string) => {
 
 export const formatDate = (isoDate: string) => {
   const date = new Date(isoDate);
-  return new Intl.DateTimeFormat('pt-BR').format(date);
+  return new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' }).format(date);
 };
